@@ -27,12 +27,12 @@ class PortListener;
 class EventLoop {
 	public :
 
-		EventLoop(vector<PortListener>& PortVector);
+		EventLoop(vector<PortListener *>& PortVector);
 		~EventLoop( void );
 
 		void					loopForEvent( void );
 		int						getEpollFd( void ) const;
-		void					addFdOfInterest(int fd, PortListener* owner);
+		void					addFdOfInterest(int fd, PortListener* owner, int eventsOfInterest);
 
 	private :
 		
@@ -42,6 +42,7 @@ class EventLoop {
 		static void		_sigIntCatcher( int signal );
 
 		map<const int, PortListener *>	_fdMap;
+		vector<PortListener *>					_PortListenerList;
 		epoll_event											_eventManager;
 		int															_epollFd;
 		static bool											_serverIsRunning;

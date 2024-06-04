@@ -15,26 +15,37 @@
 #include <stdexcept>
 #include <sys/epoll.h>
 #include <utility>
+#include <PortListener.hpp>
 
 
 EventLoop::EventLoop( void ) {
 	return ;
 }
 
-EventLoop::EventLoop(vector<PortListener>& portVector) {
+EventLoop::EventLoop(vector<PortListener *>& portVector): _PortListenerList(portVector) {
 	_epollFd = epoll_create(1);
 	if (_epollFd < 0) {
 		throw runtime_error(strerror(errno));
 	}
-	for (vector<PortListener>::iterator it = portVector.begin();
-			it != portVector.end(); ++it) {
-		_eventManager.data.fd = (*it).getSocketFd();
+	for (vector<PortListener *>::iterator it = _PortListenerList.begin();
+			it != _PortListenerList.end(); ++it) {
+		_eventManager.data.fd = (*it)->getSocketFd();
+		(*it)->setMainEventLoop(this);
 		_eventManager.events = EPOLLIN;
 		if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, _eventManager.data.fd, &_eventManager) < 0) {
 			throw runtime_error(strerror(errno));
 		}
-		_fdMap.insert(pair<const int, PortListener*>(_eventManager.data.fd, &(*it)));
+		_fdMap.insert(pair<const int, PortListener*>(_eventManager.data.fd, *it));
 	}
+	return ;
+}
+
+EventLoop::~EventLoop( void ) {
+	for (vector<PortListener *>::iterator it = _PortListenerList.begin();
+			it != _PortListenerList.end(); ++it) {
+		delete *it;
+	}
+	close(_epollFd);
 	return ;
 }
 
@@ -42,8 +53,13 @@ int	EventLoop::getEpollFd( void ) const {
 	return(_epollFd);
 }
 
-void	EventLoop::addFdOfInterest(int fd, PortListener* Owner) {
-	_fdMap.insert(pair<const int, PortListener *>(fd, Owner));	
+void	EventLoop::addFdOfInterest(int fd, PortListener* Owner, int eventsOfInterest) {
+	_eventManager.data.fd = fd;
+	_eventManager.events = eventsOfInterest;
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, fd, &_eventManager) < 0) {
+		throw runtime_error(strerror(errno));
+	}
+	_fdMap.insert(pair<const int, PortListener *>(fd, Owner));
 	return ;
 }
 
@@ -72,7 +88,7 @@ void EventLoop::loopForEvent( void ) {
 		else if (received_events == 0) {
 			continue ;
 		}
-		_getOwner(_eventManager.data.fd)->manageFd(_eventManager.data.fd);
+		_getOwner(_eventManager.data.fd)->manageEvent(_eventManager.data.fd);
 	}
 	return ;
 }
