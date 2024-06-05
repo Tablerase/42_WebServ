@@ -33,6 +33,8 @@ class EventLoop {
 		void					loopForEvent( void );
 		int						getEpollFd( void ) const;
 		void					addFdOfInterest(int fd, PortListener* owner, int eventsOfInterest);
+		void					modifyFdOfInterest(int fd, int eventsOfInterest) const;
+		void					deleteFdOfInterest(int fd);
 
 	private :
 		
@@ -43,7 +45,7 @@ class EventLoop {
 
 		map<const int, PortListener *>	_fdMap;
 		vector<PortListener *>					_PortListenerList;
-		epoll_event											_eventManager;
+		epoll_event											_eventManager[MAX_EVENTS];
 		int															_epollFd;
 		static bool											_serverIsRunning;
 };

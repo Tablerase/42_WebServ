@@ -30,6 +30,8 @@ class PortListener {
 		int						getSocketFd( void ) const;
 		const string&	getListeningPort( void ) const;
 		void					setMainEventLoop(EventLoop *ptr);
+		void					closeConnection(int fd);
+		Server*				getServer(const string& name) const;
 
 		void	initSocket( void ); // Could be moved in the constructor but it depends
 		// how you'll implement it.

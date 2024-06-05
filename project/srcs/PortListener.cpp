@@ -12,6 +12,7 @@
 
 #include <PortListener.hpp>
 #include <EventLoop.hpp>
+#include <Client.hpp>
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
@@ -100,11 +101,34 @@ void	PortListener::_acceptConnection( void ) {
 	try {
 		_mainEventLoop->addFdOfInterest(clientFd, this, EPOLLIN);
 	} catch (runtime_error& e) {
-		cerr << "Epoll_ctl_failure : " << e.what() << endl;
+		cerr << "Epoll_ctl_failure : " << e.what() << " closing correspondant connection" << endl;
 		close (clientFd);
 		return ;
 	}
-	// Create new Client object.
+	if (clientFd > 1000) {
+		// Write Custom (503)
+	}
+	try {
+		Client* newClient = new Client(clientFd, *this, *_mainEventLoop);	
+		try {
+			_clientMap.insert(pair<int, Client *>(clientFd, newClient));
+		} catch (exception& e) {
+			// Write 501
+			delete newClient;
+		}
+	} catch (runtime_error& e) {
+		// Write 501
+	}
+}
+
+void	PortListener::closeConnection(int fd) {
+	map<int, Client *>::iterator it;
+	this->_mainEventLoop->deleteFdOfInterest(fd);
+	if ((it = _clientMap.find(fd)) != _clientMap.end()) {
+		delete it->second;
+	}
+	_clientMap.erase(fd);
+	close (fd);
 }
 
 void	PortListener::manageEvent(int fd) {
@@ -115,7 +139,20 @@ void	PortListener::manageEvent(int fd) {
 		} catch (runtime_error& e) {
 			cerr << "Connection Refused: " << e.what() << endl;
 		}
-	} else if ((it = _clientMap.find(fd)) != _clientMap.end()) {
-		// Ask Client to manage his request -- Later.
+	} else {
+		try {
+			it->second->manageNewEvent();
+		} catch (exception& e) {
+			cerr << e.what() << endl;
+			closeConnection(fd);
+		}
 	}
+	return ;
+}
+
+Server*	PortListener::getServer(const string& name) const {
+	unordered_map<string, Server*>::const_iterator it = _serverMap.find(name);
+	if (it == _serverMap.end()) {
+		return (_serverMap.begin()->second);
+	} return (it->second);
 }

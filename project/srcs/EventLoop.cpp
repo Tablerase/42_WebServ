@@ -54,13 +54,29 @@ int	EventLoop::getEpollFd( void ) const {
 }
 
 void	EventLoop::addFdOfInterest(int fd, PortListener* Owner, int eventsOfInterest) {
-	_eventManager.data.fd = fd;
-	_eventManager.events = eventsOfInterest;
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, fd, &_eventManager) < 0) {
+	epoll_event	newEvent;
+	newEvent.data.fd = fd;
+	newEvent.events = eventsOfInterest;
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, fd, &newEvent) < 0) {
 		throw runtime_error(strerror(errno));
 	}
 	_fdMap.insert(pair<const int, PortListener *>(fd, Owner));
 	return ;
+}
+
+void	EventLoop::deleteFdOfInterest(int fd) {
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, fd, NULL) < 0) {
+		throw runtime_error(strerror(errno));
+	}
+	_fdMap.erase(fd);
+	return ;
+}
+
+void	EventLoop::modifyFdOfInterest(int fd, int eventsOfInterest) const {
+	epoll_event	to_modify;
+	to_modify.data.fd = fd;
+	to_modify.events = eventsOfInterest;
+	epoll_ctl(_epollFd, EPOLL_CTL_MOD, fd, &to_modify);
 }
 
 PortListener*	EventLoop::_getOwner(int fd) {
@@ -79,7 +95,7 @@ void EventLoop::loopForEvent( void ) {
 	int received_events;
 
 	while (_serverIsRunning) {
-		received_events = epoll_wait(_epollFd, &_eventManager, MAX_EVENTS, WAIT_TIMEOUT);
+		received_events = epoll_wait(_epollFd, _eventManager, MAX_EVENTS, WAIT_TIMEOUT);
 
 		if (received_events < 0 && errno != EINTR) {
 			cout << "Fatal Error with Epoll :"; 
@@ -88,7 +104,9 @@ void EventLoop::loopForEvent( void ) {
 		else if (received_events == 0) {
 			continue ;
 		}
-		_getOwner(_eventManager.data.fd)->manageEvent(_eventManager.data.fd);
+		for (int i = 0; i < received_events; ++i) {
+			_getOwner(_eventManager[i].data.fd)->manageEvent(_eventManager[i].data.fd);
+		}
 	}
 	return ;
 }

@@ -21,6 +21,7 @@
 #include <csignal>
 #include <stdexcept>
 #include <strings.h>
+#include <ctime>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/epoll.h>
