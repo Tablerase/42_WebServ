@@ -43,7 +43,7 @@ void sig_handler(int signal);
 
 int add_event(int epollfd, PortListener* host) {
 	struct epoll_event new_client;
-	new_client.events = EPOLLIN | EPOLLOUT;
+	new_client.events = EPOLLIN;
 	new_client.data.fd = host->getSocketFd();
 	return (epoll_ctl(epollfd, EPOLL_CTL_ADD, new_client.data.fd, &new_client));
 }
@@ -103,9 +103,10 @@ int main() {
 	signal(SIGPIPE, SIG_IGN);
 	struct epoll_event receiver;
 	memset(&receiver, 0, sizeof(receiver));
-	cout << "port 1 " << port1->getPortFd() << "port 2 " << port2->getPortFd() << endl;
+	cout << "port 1 " << port1->getPortFd() << "port 2 " << port2->getPortFd() << "  " << EPOLLOUT << endl;
 	while (server_is_running) {
 		// std::cout << "Hey !" << std::endl;
+		memset(&receiver, 0, sizeof(receiver));
 		int	events = epoll_wait(epollfd, &receiver, 1, 500);
 		if (events < 0) {
 			perror("Epoll failed");
@@ -142,19 +143,32 @@ int main() {
 			}
 		}
 		else {
-		cout << "Receiver fd : " << receiver.data.fd << "Events : CHeck for epollin" << (receiver.events & EPOLLIN) << "Check for EPOLLOUT " << (receiver.events & EPOLLIN) << endl;
+		// cout << "Receiver fd : " << receiver.data.fd << "Events : CHeck for epollin" << (receiver.events & EPOLLIN)
+			// << "Check for EPOLLOUT " << (receiver.events & EPOLLIN) << "Receiver events raw" << receiver.events << endl;
 			PortListener * const of_interest = getGoodListener(port1, port2, receiver.data.fd);
-			cout << of_interest->hasPendingRequest() << endl;
+			// cout << of_interest->hasPendingRequest() << endl;
 			if ((receiver.events & EPOLLOUT) && of_interest->hasPendingRequest() == 1) {
+				cout << "cc" << endl;
 				of_interest->writeRequest(receiver.data.fd);
+				receiver.events = EPOLLIN;
+				epoll_ctl(epollfd, EPOLL_CTL_MOD, receiver.data.fd, &receiver);
 			} 
-			else if ((receiver.events & EPOLLIN) && of_interest->hasPendingRequest() == 0) {
+			else if (receiver.events & EPOLLIN) {
+				cout << "cc" << endl;
 				try {
 					of_interest->readRequest(receiver.data.fd);
+					receiver.events |= EPOLLOUT;
+					epoll_ctl(epollfd, EPOLL_CTL_MOD, receiver.data.fd, &receiver);
 				} catch (runtime_error& e) {
 					std::cerr << e.what() << std::endl;
-					break ;
+					epoll_ctl(epollfd, EPOLL_CTL_DEL, receiver.data.fd, NULL);
 				}
+			}
+			else if ((receiver.events & EPOLLHUP) != 0) {
+				cout << "cc" << endl;
+				of_interest->closeClient(receiver.data.fd);
+				epoll_ctl(epollfd, EPOLL_CTL_DEL, receiver.data.fd, NULL);
+				cout << "Finito" << endl;
 			}
 		}
 	}

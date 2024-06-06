@@ -32,6 +32,7 @@ class PortListener {
 		void	writeRequest(int socketFd );
 		int		matchFd( int fd ) const;
 		int		hasPendingRequest( void ) const;
+		void	closeClient( int fd );
 
 	private :
 		

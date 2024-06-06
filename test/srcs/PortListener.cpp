@@ -56,17 +56,17 @@ PortListener::PortListener(const char* port, const string& index) : _index(index
 	setsockopt(_portFd, SOL_SOCKET, SO_REUSEADDR, &reUse, sizeof(reUse));
 
 	// Assign the socket to the address and port we define with the structure.
+
 	for (_address = _res; _address != NULL; _address = _address->ai_next) {
 		if (bind(_portFd, _address->ai_addr, _address->ai_addrlen) == 0) {
 			break;
 		}
 	}
 	if (_address == NULL) {
-		throw runtime_error(strerror(errno));
 		freeaddrinfo(_res);
 		_res = NULL;
 		close(_portFd);
-		return;
+		throw runtime_error(strerror(errno));
 	}
 
 	// Reserve the port and start listening to it.
@@ -122,18 +122,23 @@ int PortListener::getSocketFd( void ) {
 void	PortListener::readRequest(int fd) {
 	char	buffer[4096];
 
+	cout << "client" << fd << endl;
 	int bytesRead = recv(fd, buffer, 4095, 0);
-	if (bytesRead == 0) {
+	if (bytesRead < 0) {
 		cout << "Nothing to read" << endl;
-		close(fd);
-		vector<int>::iterator it = find(_clientFds.begin(), _clientFds.end(), fd); 
-		_clientFds.erase(it);
-		return ;
-	} else if (bytesRead < 0) {
+		closeClient(fd);
 		throw runtime_error(strerror(errno));
+		return ;
 	}
 	this->_request += buffer;
 	std::cout << buffer << std::endl;
+}
+
+void	PortListener::closeClient( int fd ) {
+	close(fd);
+	vector<int>::iterator it = find(_clientFds.begin(), _clientFds.end(), fd); 
+	_clientFds.erase(it);
+	return ;
 }
 
 void PortListener::writeRequest(int fd) {
