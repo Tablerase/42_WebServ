@@ -16,11 +16,10 @@
 
 #include <cstddef>
 #include <string>
-# define BUFFER_SIZE 1000000
+# define BUFFER_SIZE 32000
 # define MAX_URI_SIZE 8192
 # define MAX_HEADER_SIZE 16384
 #	include <PortListener.hpp>
-typedef void (Client::*eventfunc)(void);
 
 class Server;
 
@@ -33,7 +32,7 @@ typedef enum e_status {
 typedef struct s_requestLine {
 	string	method;
 	string	uri;
-	string	protocol;
+	double	protocol;
 	string	filePath;
 	string	cgiQuery;
 	double	version;
@@ -56,11 +55,14 @@ class Client {
 
 	private :
 
-		void	_newRequest( void );
-		void	_continueRead( void );
+		void	_readRequest( void );
 		void	_sendAnswer( void );
 		void	_parseRequest( void );
 		void	_parseHeader( void );
+		void	_parseRequestLine( const string& requestLine );
+		void	_parseMethod( const string& method);
+		void 	_parseUri( const string& uri);
+		void	_parseProtocol( const string& protocol);
 
 		// Variables for interaction with outside of the objects.
 		Server*				_configServer;
@@ -77,16 +79,14 @@ class Client {
 		size_t							_bytesReadFromBody;
 		string							_header;
 		string							_body;
-		map<string, string>	_headerFieldsofInterest;
+		map<string, string>	_headerFields;
+		bool								_headerIsFullyRed;
 
 		// COncerning response status
 		string				_response;
 		int 					_returnCode;
 		bool					_responseIsReady;
-		bool					_requestIsFullyRed;
 		bool					_connectionShouldBeClosed;
-
-		eventfunc			_eventFunctions[3];
 };
 
 #endif

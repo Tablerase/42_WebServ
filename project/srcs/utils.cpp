@@ -45,3 +45,32 @@ int	normalizeStr(string &s) {
 	}
 	return (0);
 }
+
+bool fieldValueHasForbiddenChar(const string& s) {
+	bool hasForbidden = false;	
+	for (size_t i = 0; s[i] != '\0'; ++i) {
+		if (isalnum(s[i]) == 0 && s[i] != '-' && s[i] != '_') {
+			hasForbidden = true;
+			break ;
+		}
+	}
+	return (hasForbidden);
+}
+
+static bool loopThroughAllowedChar(char c) {
+		if ((c >= ' ' && c <= ';') || c == '=' || (c >= '?' && c <= '[')
+				|| c == ']' || c == '_' || (c >= 'a' && c <= 'z') || c == '~') {
+			return (true);
+		} return (false);
+	}
+
+bool fieldContentHasForbiddenChar(const string& s) {
+	bool hasForbidden = false;	
+	for (size_t i = 0; s[i] != '\0'; ++i) {
+		if (loopThroughAllowedChar(s[i]) == false) {
+			hasForbidden = true;
+			break;
+		}
+	}
+	return (hasForbidden);
+}

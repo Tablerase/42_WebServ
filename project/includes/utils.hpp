@@ -19,5 +19,8 @@ using namespace std;
 
 
 void	substituteSpaces(string& s);
+int		normalizeStr(string &s);
+bool 	fieldValueHasForbiddenChar(const string& s);
+bool	fieldContentHasForbiddenChar(const string& s);
 
 #endif
