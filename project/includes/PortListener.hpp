@@ -41,12 +41,13 @@ class PortListener {
 	private :
 		void	_acceptConnection( void );
 
-		unordered_map<string, Server *>	_serverMap;
-		map<int, Client *>							_clientMap;
-		int															_socketFd;
-		EventLoop*											_mainEventLoop;
-		string													_listeningPort;
-		struct addrinfo*								_address;
+		map<string, Server *>	_serverMap;
+		string								_defaultServer;
+		map<int, Client *>		_clientMap;
+		int										_socketFd;
+		EventLoop*						_mainEventLoop;
+		string								_listeningPort;
+		struct addrinfo*			_address;
 };
 
 #endif

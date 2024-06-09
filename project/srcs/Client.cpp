@@ -13,9 +13,13 @@
 #include <Client.hpp>
 #include <algorithm>
 #include <cctype>
+#include <cerrno>
 #include <cstddef>
+#include <cstdio>
 #include <cstdlib>
+#include <fcntl.h>
 #include <string>
+#include <sys/stat.h>
 #include <utils.hpp>
 
 Client::Client(int fd, PortListener& owner, EventLoop& eventLoop): _connectionEntry(fd), _owner(owner),
@@ -33,6 +37,8 @@ void Client::manageNewEvent( void ) {
 }
 
 void	Client::_readRequest( void ) {
+	bool	thisReadAsBeenHandled = false;
+	size_t	bodyStart = 0;
 	_status = READING;
 	_singleReadBytes = read(_connectionEntry, _buffer, BUFFER_SIZE);	
 	if (_singleReadBytes <= 0) {
@@ -41,22 +47,122 @@ void	Client::_readRequest( void ) {
 	memset(_buffer, 0, _singleReadBytes);
 	const string request(_buffer, _singleReadBytes);
 	if (_headerIsFullyRed == false) {
-		const size_t	endOfHeader = request.find("\r\n\r\n"); 
-		_header += request.substr(0, endOfHeader);	
-		_body += request.substr(endOfHeader + 4, request.npos);
-		if (_header.size() > MAX_HEADER_SIZE) {
-			// 431
-			return ;
+		const size_t endOfHeader = request.find("\r\n\r\n");
+		if (endOfHeader == request.npos) {
+			_header += request;
+			thisReadAsBeenHandled = true;
+		} else {
+			_header += request.substr(0, endOfHeader);
+			if (request.begin() + endOfHeader + 5 == request.end()) {
+				thisReadAsBeenHandled = true;
+			} else {
+				bodyStart = endOfHeader + 5;
+			}
+			_parseHeader();
 		}
-		if (endOfHeader != request.npos) {
-			_headerIsFullyRed = true;
-			_parseRequest();
+	}
+	if (thisReadAsBeenHandled == false && _responseIsReady == false) {
+		if (_bodyIsPresent == false) {
+			// error 400
+		} else if (_requestIsChunked == true) {
+			_parseChunkedRequest(request.substr(bodyStart, request.npos));
+		} else {
+			_body += request.substr(bodyStart, request.npos);
+			if (_body.size() > _contentLength) {
+				// error 400
+			} else if (_body.size() == _contentLength) {
+				_bodyIsFullyRed = true;
+			}
 		}
-	} else {
-		_body += request;
-		// Do body things.
+	}
+	if (_responseIsReady == false && (_bodyIsFullyRed == true || _bodyIsPresent == false)) {
+		if (_requestLine.method.compare("GET") == 0) {
+			// do get things
+		} else if (_requestLine.method.compare("POST") == 0) {
+			// do post things
+		} else {
+			// do delete things
+		}
 	}
 	return ;
+}
+
+void Client::_parseChunkedRequest(string requestPart) {
+	string	chunk_size, chunk_content;
+	size_t	num_size;
+	char		*endptr;
+	while (requestPart.size() != 0) {
+		chunk_size = requestPart.substr(0, requestPart.find("\r\n"));
+		if (requestPart.size() > 8) {
+			// error 400
+			break ;
+		}
+		requestPart.erase(0, chunk_size.size() + 2);
+		num_size = strtol(chunk_size.c_str(), &endptr, 16);
+		if (num_size >= _configServer->getMaxBodySize()) {
+			// error 413
+			break ;
+		} else if (*endptr != '\0') {
+			// error 400
+			break ;
+		} else if (num_size == 0) {
+			if (requestPart.find("\r\n\r\n") != 0) {
+				// error 400
+			} else {
+				_bodyIsFullyRed = true;
+				break ;
+			}
+		}
+		if (requestPart.find("\r\n") != num_size) {
+			// error 400
+		}
+		_body += requestPart.substr(0, num_size);
+		requestPart.erase(0, num_size + 2);
+	}
+	return ;
+}
+
+void	Client::_checkContentLength( void ) {
+	const map<string, string>::const_iterator it = _headerFields.find("content-length");
+	if (it == _headerFields.end()) {
+		_contentLength = 0;
+		return ;
+	} else if (_requestIsChunked == true) {
+		// error 400
+	}
+	else if (it->second.size() > 11) {
+		//error 400
+	}
+	char *endptr;
+	_contentLength = strtol(it->second.c_str(), &endptr, 10);
+	if (*endptr != '\0' || _contentLength < 0) {
+		// error 400
+	} else if (_contentLength >= _configServer->getMaxBodySize) {
+		// error 413
+	}
+}
+
+void Client::_manageDeleteRequest( void ) {
+	struct stat buffer;	
+	if (stat(_requestLine.uri.c_str(), &buffer) != 0) {
+		if (errno == EACCES) {
+			// error 403
+		} else if (errno == ENOENT) {
+			// error 404
+		} else if (errno == ENOMEM) {
+			// error 501
+		} else {
+			//error 400
+		}
+	}
+	if (!(S_IWUSR & buffer.st_mode)) {
+		// error 403
+	}
+	if (remove(_requestLine.filePath.c_str()) != 0) {
+		// 501
+	} else {
+		// 204
+	}
 }
 
 void	Client::_parseRequest( void ) {
@@ -75,7 +181,28 @@ void	Client::_parseRequest( void ) {
 	if (_responseIsReady == true) {
 		return ;
 	} _parseHeader();
+	if (_responseIsReady == true) {
+		return ;
+	}
+	_checkForChunkedRequest();
+	_checkContentLength();
+	if (_requestIsChunked == true || _contentLength > 0) {
+		_bodyIsPresent = true;
+	}
 	return ;
+}
+
+void	Client::_checkForChunkedRequest( void ) {
+	const map<string, string>::const_iterator it = _headerFields.find("content-encoding"); 
+	if (it == _headerFields.end()) {
+		_requestIsChunked = false;
+		return ;
+	}
+	if (it->second != "chunked") {
+		// error 415
+	} else {
+		_requestIsChunked = true;
+	} return ;
 }
 
 void	Client::_parseRequestLine( const string& requestLine) {
@@ -140,7 +267,9 @@ void Client::_parseProtocol(const string& protocol) {
 	version = strtod(protocol.c_str() + 5, &endptr);
 	if (version > 1.1) {
 		// error 505
-	} else if (version < 0.9 || *endptr != '\0') {
+	} else if (version < 1.1) {
+		// error 426 -> upgrade 1.1
+	} else if (*endptr != '\0') {
 		// error 400
 	} else {
 		_requestLine.protocol = version;
@@ -167,12 +296,12 @@ void	Client::_parseHeader( void ) {
 			//error 404
 			return ;
 		}
-		normalizeStr(field_content);
 		field_content.erase(0, field_content.find_first_not_of(" "));
 		field_content.erase(field_content.find_last_not_of(" ") + 1, field_content.npos);
 		if (fieldContentHasForbiddenChar(field_content) == true) {
 			//error 404	
 		}
+		normalizeStr(field_content);
 		_headerFields.insert(pair<string, string>(field_value, field_content));
 	}
 }

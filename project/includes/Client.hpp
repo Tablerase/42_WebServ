@@ -63,6 +63,10 @@ class Client {
 		void	_parseMethod( const string& method);
 		void 	_parseUri( const string& uri);
 		void	_parseProtocol( const string& protocol);
+		void	_checkContentLength(void);
+		void	_checkForChunkedRequest( void );
+		void	_parseChunkedRequest( string RequestPart );
+		void	_manageDeleteRequest( void );
 
 		// Variables for interaction with outside of the objects.
 		Server*				_configServer;
@@ -81,6 +85,10 @@ class Client {
 		string							_body;
 		map<string, string>	_headerFields;
 		bool								_headerIsFullyRed;
+		bool								_bodyIsPresent;
+		bool								_bodyIsFullyRed;
+		bool								_requestIsChunked;
+		int									_contentLength;
 
 		// COncerning response status
 		string				_response;

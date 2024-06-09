@@ -29,13 +29,13 @@ EventLoop::EventLoop(vector<PortListener *>& portVector): _PortListenerList(port
 	}
 	for (vector<PortListener *>::iterator it = _PortListenerList.begin();
 			it != _PortListenerList.end(); ++it) {
-		_eventManager.data.fd = (*it)->getSocketFd();
+		_eventManager[0].data.fd = (*it)->getSocketFd();
 		(*it)->setMainEventLoop(this);
-		_eventManager.events = EPOLLIN;
-		if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, _eventManager.data.fd, &_eventManager) < 0) {
+		_eventManager[0].events = EPOLLIN;
+		if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, _eventManager[0].data.fd, &_eventManager[0]) < 0) {
 			throw runtime_error(strerror(errno));
 		}
-		_fdMap.insert(pair<const int, PortListener*>(_eventManager.data.fd, *it));
+		_fdMap.insert(pair<const int, PortListener*>(_eventManager[0].data.fd, *it));
 	}
 	return ;
 }

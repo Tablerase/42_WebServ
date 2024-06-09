@@ -22,7 +22,7 @@ PortListener::PortListener( void ) {
 }
 
 PortListener::~PortListener( void ) {
-	for(unordered_map<string, Server *>::iterator it = _serverMap.begin();
+	for(map<string, Server *>::iterator it = _serverMap.begin();
 			it != _serverMap.end(); ++it) {
 		delete it->second;
 	}
@@ -151,8 +151,8 @@ void	PortListener::manageEvent(int fd) {
 }
 
 Server*	PortListener::getServer(const string& name) const {
-	unordered_map<string, Server*>::const_iterator it = _serverMap.find(name);
+	map<string, Server*>::const_iterator it = _serverMap.find(name);
 	if (it == _serverMap.end()) {
-		return (_serverMap.begin()->second);
+		return (_serverMap.find(_defaultServer)->second);
 	} return (it->second);
 }
