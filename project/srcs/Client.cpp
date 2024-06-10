@@ -81,11 +81,11 @@ void	Client::_readRequest( void ) {
 	}
 	if (_responseIsReady == false && (_bodyIsFullyRed == true || _bodyIsPresent == false)) {
 		if (_requestLine.method.compare("GET") == 0) {
-			// do get things
+			_manageGetRequest();
 		} else if (_requestLine.method.compare("POST") == 0) {
-			// do post things
+			_managePostRequest();
 		} else {
-			// do delete things
+			_manageDeleteRequest();
 		}
 	}
 	return ;
@@ -146,8 +146,55 @@ void	Client::_checkContentLength( void ) {
 	}
 }
 
-void	Client::_manageGetRequest( void ) {
+void Client::_managePostRequest( void ) {
 	if (*(_requestLine.uri.end() - 1) == '/') {
+		string	index = configServer->getIndexFile();
+		if (index == "") {
+			// error 403
+			return ;
+		} else {
+			_requestLine.uri += _configServer.getIndexFile();
+		}
+	}
+	string extension = _requestLine.uri.substr(_requestLine.uri.find_last_of("."),
+			_requestLine.uri.npos);
+	if (extension != "" && extension.find("/") == extension.npos
+			&& _configServer->isACgiExtension == true) {
+			// do cgi things
+	} else {
+		_processClassicPostRequest();
+	}
+}
+
+void Client::_processClassicPostRequest( void ) {
+	struct stat buffer;	
+	if (stat(_requestLine.uri.c_str(), &buffer) != 0) {
+		if (errno == EACCES) {
+			// error 403
+		} else if (errno == ENOENT) {
+			// error 404
+		} else if (errno == ENOMEM) {
+			// error 501
+		} else {
+			//error 400
+		}
+	}
+	if (!(S_IWUSR & buffer.st_mode)) {
+		// error 403
+	}
+	ofstream out;	
+	out.open(_requestLine.filePath);
+	if (out.fail()) {
+		// error 500;	
+	} else {
+		out << _body;
+		out.close();
+		// 201 created;
+	}
+}
+
+void	Client::_manageGetRequest( void ) {
+	if (*(_requestLine.filePath.end() - 1) == '/') {
 		string	index = configServer->getIndexFile();
 		if (index == "") {
 			if (_configServer->isDirectoryListingAllowed == false) {
@@ -157,11 +204,11 @@ void	Client::_manageGetRequest( void ) {
 			}
 			return ;
 		} else {
-			_requestLine.uri += _configServer.getIndexFile();
+			_requestLine.filePath += _configServer.getIndexFile();
 		}
 	}
-	string extension = _requestLine.uri.substr(_requestLine.uri.find_last_of("."),
-			_requestLine.uri.npos);
+	string extension = _requestLine.filePath.substr(_requestLine.uri.find_last_of("."),
+			_requestLine.filePath.npos);
 	if (extension != "" && extension.find("/") == extension.npos
 			&& _configServer->isACgiExtension == true) {
 			// do cgi things
@@ -244,15 +291,19 @@ void	Client::_processClassicGetRequest( string& extension ) {
 		// error 403
 		return ;
 	}
+	if (S_ISDIR(buffer.st_mode) == true) {
+		// 409
+	}
 	stringstream size;
 	size << buffer.st_size;
-	ofstream toSend;
+	ifstream toSend;
 	toSend.open(_requestLine.filePath);
 	if (toSend.fail()) {
 		// error 500
 	}
 	_responseHeader.insert(pair<string, string>("Content-length: ", size.str()));
 	_bodyStream << toSend.rdbuf();
+	toSend.close();
 	_buildGetResponse();
 }
 
@@ -267,6 +318,7 @@ void	Client::_buildGetResponse( void ) {
 	} _response << "\r\n";
 	_response << _bodyStream.rdbuf();
 	_responseIsReady = true;
+	_connectionShouldBeClosed = false;
 	_mainEventLoop.modifyFdOfInterest(_connectionEntry, EPOLLOUT);
 
 }
@@ -389,7 +441,6 @@ void Client::_parseUri(const string& uri) {
 	if (uri.size() > MAX_URI_SIZE) {
 		// error 414
 	}
-	_</a></li>requestLine.filePath = uri.substr(0, uri.find_first_of("?"));
 	_requestLine.cgiQuery = uri.substr(uri.find_first_of("?", uri.npos));
 	if (normalizeStr(_requestLine.filePath) < 0) {
 		// error 400

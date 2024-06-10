@@ -69,7 +69,9 @@ class Client {
 		void	_parseChunkedRequest( string RequestPart );
 		void	_manageDeleteRequest( void );
 		void	_manageGetRequest( void );
+		void	_managePostRequest( void );
 		void	_processClassicGetRequest(string& extension );
+		void	_processClassicPostRequest( void );
 		bool	_checkExtensionMatch(const string& extension);
 		void	_listDirectory( void );
 		void	_buildGetResponse( void );
