@@ -256,17 +256,21 @@ void Client::_listDirectory( void ) {
 	_buildGetResponse();
 }
 
-void	Client::_processClassicGetRequest( string& extension ) {
-	extension.erase(0, 1);
-	if (extension == "" || extension.find("/") != extension.npos) {
-		extension = "text/plain";
-	} else if (extension == "jpg" || extension == "jpeg" || extension == "png"
-			|| extension == "avif" || extension == "webp" ) {
-		extension.insert(0, "image/");
+void Client::_generateContentExtension(string& path) {
+	path.erase(0, 1);
+	if (path == "" || path.find("/") != path.npos) {
+		path = "text/plain";
+	} else if (path == "jpg" || path == "jpeg" || path == "png"
+			|| path == "avif" || path == "webp" ) {
+		path.insert(0, "image/");
 	} else {
-		extension.insert(0, "text/");
+		path.insert(0, "text/");
 	}
-	_responseHeader.insert(pair<string, string>("Content-type: ", extension));
+	_responseHeader.insert(pair<string, string>("Content-type: ", path));
+}
+
+void	Client::_processClassicGetRequest( string& extension ) {
+	_generateContentExtension(extension);	
 	if (_checkExtensionMatch(extension) == false) {
 		// 406
 		return ;
@@ -311,16 +315,72 @@ void	Client::_buildGetResponse( void ) {
 	_responseHeader.insert(pair<string, string>("Date: ", getDate()));
 	_responseHeader.insert(pair<string, string>("Connection: ", "Keep-Alive"));
 	_responseHeader.insert(pair<string, string>("Keep-Alive: ", "timeout=5, max=1"));
-	_response << "HTTP/1.1 200 OK\r\n";
+	_fillResponse("200 OK", false);
+}
+
+void	Client::_fillResponse( string status, bool shouldClose ) {
+	_response << "HTTP/1.1 " << status << "\r\n";
 	_response << "Server: " << _configServer->getName() << "\r\n";
 	for (map<string, string>::iterator it = _responseHeader.begin(); it != _responseHeader.end(); ++it) {
 		_response << it->first << it->second << "\r\n";
 	} _response << "\r\n";
 	_response << _bodyStream.rdbuf();
 	_responseIsReady = true;
-	_connectionShouldBeClosed = false;
+	_connectionShouldBeClosed = shouldClose;
+	_status = WRITING;
 	_mainEventLoop.modifyFdOfInterest(_connectionEntry, EPOLLOUT);
+}
 
+void Client::_buildNoBodyResponse(int status, string info, string body, bool isFatal) {	
+	string	customPage = _configServer->getCustomStatusPage(status);
+	bool		customPageIsPresent = false;
+	if (customPage != "") {
+		customPageIsPresent = _loadCustomStatusPage(customPage);
+	}
+	if (customPageIsPresent == false) {
+		_bodyStream << "<!doctype html><title>" << status << info << "</title><h1>"
+			<< info << "</h1><p>" << body << "</p>";
+		stringstream size;
+		size << _bodyStream.str().size();
+		_responseHeader.insert(pair<string, string>("Content-length: ", size.str()));
+		_responseHeader.insert(pair<string, string>("Content-type: ", "text/html"));
+	}
+	_responseHeader.insert(pair<string, string>("Date: ", getDate()));
+	if (isFatal == true) {
+		_responseHeader.insert(pair<string, string>("Connection: ", "close"));
+	} else {
+		_responseHeader.insert(pair<string, string>("Connection: ", "Keep-Alive"));
+		_responseHeader.insert(pair<string, string>("Keep-Alive: ", "timeout=5, max=1"));
+	}
+	stringstream statusToStr;
+	statusToStr << status;
+	_fillResponse(statusToStr.str(), isFatal);
+}
+
+bool Client::_loadCustomStatusPage(string path) {
+	struct stat buf;
+	if (stat(path.c_str(), &buf) != 0) {
+		return (0);
+	}
+	else if (!S_ISREG(buf.st_mode) == false) {
+		return (0);
+	}
+	ifstream customPage;
+	customPage.open(path);
+	if (customPage.fail()) {
+		return (0);
+	}
+	string extension = path.substr(path.find_last_of("/", path.npos));
+	_generateContentExtension(extension);
+	if (_checkExtensionMatch(extension) == false) {
+		return (0);
+	}
+	_bodyStream << customPage.rdbuf();
+	customPage.close();
+	stringstream size;
+	size << buf.st_size;
+	_responseHeader.insert(pair<string, string>("Content-length: ", size.str()));
+	return (1);
 }
 
 bool	Client::_checkExtensionMatch(const string& extension) {

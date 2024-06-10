@@ -124,7 +124,7 @@ void	PortListener::readRequest(int fd) {
 
 	cout << "client" << fd << endl;
 	int bytesRead = recv(fd, buffer, 4095, 0);
-	if (bytesRead < 0) {
+	if (bytesRead <= 0) {
 		cout << "Nothing to read" << endl;
 		closeClient(fd);
 		throw runtime_error(strerror(errno));
@@ -132,6 +132,7 @@ void	PortListener::readRequest(int fd) {
 	}
 	this->_request += buffer;
 	std::cout << buffer << std::endl;
+	memset(buffer, 0, 4096);
 }
 
 void	PortListener::closeClient( int fd ) {
@@ -156,7 +157,7 @@ void PortListener::writeRequest(int fd) {
 	_response += size;
 	_response += "\r\n\r\n";
 	ostringstream sstream;
-	sstream << index_file.rdbuf();
+	 << index_file.rdbuf();
 	_response += sstream.str();
 	cout << _response << endl;
 	write(fd, _response.c_str(), _response.size());

@@ -112,7 +112,7 @@ int main() {
 			perror("Epoll failed");
 			break;
 		}
-		std::cout << "received events : " << events << std::endl;
+		// std::cout << "received events : " << events << std::endl;
 		if (events == 0) {
 			continue;
 			std::cout << "Port1 fd : " << port1->getPortFd() << std::endl;

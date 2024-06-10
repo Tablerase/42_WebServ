@@ -75,6 +75,10 @@ class Client {
 		bool	_checkExtensionMatch(const string& extension);
 		void	_listDirectory( void );
 		void	_buildGetResponse( void );
+		void	_buildNoBodyResponse(int status, string info, string body, bool isFatal);
+		bool	_loadCustomStatusPage(string path);
+		void	_fillResponse( string status, bool shouldClose );
+		void	_generateContentExtension(string& path);
 
 		// Variables for interaction with outside of the objects.
 		Server*				_configServer;
