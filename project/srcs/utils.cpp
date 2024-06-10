@@ -13,7 +13,10 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
+#include <ctime>
+#include <string>
 #include <utils.hpp>
+#include <ExternLibrary.hpp>
 #include <Client.hpp>
 
 void	substituteSpaces(string& s) {
@@ -73,4 +76,15 @@ bool fieldContentHasForbiddenChar(const string& s) {
 		}
 	}
 	return (hasForbidden);
+}
+
+string	getDate( void ) {
+	time_t rawtime;
+	struct tm* timeinfo;
+	char buffer[128];
+	
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	strftime(buffer, 128, "%a, %d %b %G %T %Z", timeinfo);
+	return (buffer);
 }

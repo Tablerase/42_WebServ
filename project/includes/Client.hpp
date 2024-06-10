@@ -15,6 +15,7 @@
 # define CLIENT_HPP
 
 #include <cstddef>
+#include <sstream>
 #include <string>
 # define BUFFER_SIZE 32000
 # define MAX_URI_SIZE 8192
@@ -67,6 +68,11 @@ class Client {
 		void	_checkForChunkedRequest( void );
 		void	_parseChunkedRequest( string RequestPart );
 		void	_manageDeleteRequest( void );
+		void	_manageGetRequest( void );
+		void	_processClassicGetRequest(string& extension );
+		bool	_checkExtensionMatch(const string& extension);
+		void	_listDirectory( void );
+		void	_buildGetResponse( void );
 
 		// Variables for interaction with outside of the objects.
 		Server*				_configServer;
@@ -91,10 +97,12 @@ class Client {
 		int									_contentLength;
 
 		// COncerning response status
-		string				_response;
-		int 					_returnCode;
-		bool					_responseIsReady;
-		bool					_connectionShouldBeClosed;
+		stringstream				_response;
+		stringstream				_bodyStream;
+		map<string, string>	_responseHeader;
+		int 								_returnCode;
+		bool								_responseIsReady;
+		bool								_connectionShouldBeClosed;
 };
 
 #endif

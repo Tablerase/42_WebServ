@@ -18,7 +18,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fcntl.h>
+#include <fstream>
+#include <sstream>
 #include <string>
+#include <dirent.h>
+#include <sys/epoll.h>
 #include <sys/stat.h>
 #include <utils.hpp>
 
@@ -142,7 +146,148 @@ void	Client::_checkContentLength( void ) {
 	}
 }
 
-void Client::_manageDeleteRequest( void ) {
+void	Client::_manageGetRequest( void ) {
+	if (*(_requestLine.uri.end() - 1) == '/') {
+		string	index = configServer->getIndexFile();
+		if (index == "") {
+			if (_configServer->isDirectoryListingAllowed == false) {
+				// error 403
+			} else {
+				_listDirectory();
+			}
+			return ;
+		} else {
+			_requestLine.uri += _configServer.getIndexFile();
+		}
+	}
+	string extension = _requestLine.uri.substr(_requestLine.uri.find_last_of("."),
+			_requestLine.uri.npos);
+	if (extension != "" && extension.find("/") == extension.npos
+			&& _configServer->isACgiExtension == true) {
+			// do cgi things
+	} else {
+		_processClassicGetRequest(extension);
+	} 
+}
+
+void Client::_listDirectory( void ) {
+	DIR*	directoryPtr = opendir(_requestLine.filePath.c_str());
+	if (directoryPtr == NULL) {
+		if (errno == ENOENT) {
+			//error 404
+		} else if (errno == EACCES) {
+			//error 403
+		} else {
+			// error 500
+		}
+	}	
+	_requestLine.uri.erase(_requestLine.uri.find_first_of("?"), _requestLine.uri.npos);
+	_bodyStream << "<!DOCTYPE html><html><head><title> Listing of ";
+	_requestLine.filePath.erase(_requestLine.filePath.end() - 1);
+	_bodyStream << _requestLine.filePath.substr(_requestLine.filePath.find_last_of('/'),
+			_requestLine.filePath.npos) << " </title></head><body><p>Content : </p><ul>";
+	for (struct dirent* dirEntry = readdir(directoryPtr);
+			dirEntry != NULL; dirEntry = readdir(directoryPtr)) {
+		if (dirEntry->d_name[0] == '.') {
+			continue;
+		}
+		_bodyStream << "<li><a href=\"" << _requestLine.uri << dirEntry->d_name;
+		if (dirEntry->d_type == DT_DIR) {
+			_bodyStream << "/";
+		}
+		_bodyStream << "\"> " << dirEntry->d_name;
+		if (dirEntry->d_type == DT_DIR) {
+			_bodyStream << "/";
+		}
+		_bodyStream << "</a></li>";
+	}
+	_bodyStream << "</ul></body></html>";
+	_responseHeader.insert(pair<string, string>("Content-type: ", "text/html"));
+	stringstream size;
+	size << _bodyStream.str().size();
+	_responseHeader.insert(pair<string, string>("Content-Length: ", size.str()));
+	_buildGetResponse();
+}
+
+void	Client::_processClassicGetRequest( string& extension ) {
+	extension.erase(0, 1);
+	if (extension == "" || extension.find("/") != extension.npos) {
+		extension = "text/plain";
+	} else if (extension == "jpg" || extension == "jpeg" || extension == "png"
+			|| extension == "avif" || extension == "webp" ) {
+		extension.insert(0, "image/");
+	} else {
+		extension.insert(0, "text/");
+	}
+	_responseHeader.insert(pair<string, string>("Content-type: ", extension));
+	if (_checkExtensionMatch(extension) == false) {
+		// 406
+		return ;
+	} 
+	struct stat buffer;
+	if(stat(_requestLine.filePath.c_str(), &buffer) != 0) {
+		if (errno == EACCES) {
+			// error 403
+			return ;
+		} else if (errno == ENOENT) {
+			// error 404
+			return ;
+		} else if (errno == ENOMEM) {
+			// error 501
+			return ;
+		} else {
+			//error 400
+			return ;
+		}
+	}
+	if (!(S_IRUSR & buffer.st_mode)) {
+		// error 403
+		return ;
+	}
+	stringstream size;
+	size << buffer.st_size;
+	ofstream toSend;
+	toSend.open(_requestLine.filePath);
+	if (toSend.fail()) {
+		// error 500
+	}
+	_responseHeader.insert(pair<string, string>("Content-length: ", size.str()));
+	_bodyStream << toSend.rdbuf();
+	_buildGetResponse();
+}
+
+void	Client::_buildGetResponse( void ) {
+	_responseHeader.insert(pair<string, string>("Date: ", getDate()));
+	_responseHeader.insert(pair<string, string>("Connection: ", "Keep-Alive"));
+	_responseHeader.insert(pair<string, string>("Keep-Alive: ", "timeout=5, max=1"));
+	_response << "HTTP/1.1 200 OK\r\n";
+	_response << "Server: " << _configServer->getName() << "\r\n";
+	for (map<string, string>::iterator it = _responseHeader.begin(); it != _responseHeader.end(); ++it) {
+		_response << it->first << it->second << "\r\n";
+	} _response << "\r\n";
+	_response << _bodyStream.rdbuf();
+	_responseIsReady = true;
+	_mainEventLoop.modifyFdOfInterest(_connectionEntry, EPOLLOUT);
+
+}
+
+bool	Client::_checkExtensionMatch(const string& extension) {
+	const map<string, string>::const_iterator it = _headerFields.find("Accept");
+	if (it == _headerFields.end()) {
+		if (extension != "text/plain" && extension != "text/html") {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	if (it->second.find("*/*") != it->second.npos || it->second.find(extension) != it->second.npos) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+void	Client::_manageDeleteRequest( void ) {
 	struct stat buffer;	
 	if (stat(_requestLine.uri.c_str(), &buffer) != 0) {
 		if (errno == EACCES) {
@@ -159,7 +304,7 @@ void Client::_manageDeleteRequest( void ) {
 		// error 403
 	}
 	if (remove(_requestLine.filePath.c_str()) != 0) {
-		// 501
+		// 500
 	} else {
 		// 204
 	}
@@ -244,7 +389,7 @@ void Client::_parseUri(const string& uri) {
 	if (uri.size() > MAX_URI_SIZE) {
 		// error 414
 	}
-	_requestLine.filePath = uri.substr(0, uri.find_first_of("?"));
+	_</a></li>requestLine.filePath = uri.substr(0, uri.find_first_of("?"));
 	_requestLine.cgiQuery = uri.substr(uri.find_first_of("?", uri.npos));
 	if (normalizeStr(_requestLine.filePath) < 0) {
 		// error 400
