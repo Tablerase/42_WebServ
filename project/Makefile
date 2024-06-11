@@ -6,7 +6,7 @@
 #    By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/08 18:08:42 by rcutte            #+#    #+#              #
-#    Updated: 2024/06/11 18:05:15 by rcutte           ###   ########.fr        #
+#    Updated: 2024/06/11 18:30:03 by rcutte           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -97,7 +97,7 @@ re: re_msg fclean all
 
 ####################### Tests ########################
 
-ARGS = "test.conf"
+ARGS = "./config/basic.conf"
 
 exec: clean all exec_msg
 	@./$(NAME) $(ARGS)

@@ -6,29 +6,30 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/11 16:37:44 by rcutte            #+#    #+#             */
-/*   Updated: 2024/06/11 18:05:31 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/11 18:31:00 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-void  CheckInput(int argc, char** argv){
+bool  CheckInput(int argc, char** argv){
   try {
     if (argc != 2)
       throw std::invalid_argument("Usage: ./webserv [config_file]");
     if (std::string(argv[1]).rfind(".conf") != std::string(argv[1]).size() - 5)
       throw std::invalid_argument("Config file must be a .conf file");
+    return true;
   } catch (std::exception &e) {
     std::cerr
       << REDB << " ERROR " << RESET << " "
       << RED << e.what() << RESET << std::endl;
-    exit(1);
+    return false;
   }
 }
 
 int main(int argc, char** argv, char **envp){
-  CheckInput(argc, argv);
-  
+  if (CheckInput(argc, argv) == false ) { return EXIT_FAILURE; };
+
   // Parsing
   // vector<PortListener> listeners = ParseConfig(argv[1]);
 
