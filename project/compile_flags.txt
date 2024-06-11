@@ -1,2 +1,2 @@
--Iincludes
+-Iinclude
 -Wall -Wextra -Werror -std=c++98

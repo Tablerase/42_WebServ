@@ -26,6 +26,7 @@
 #include <sys/epoll.h>
 #include <sys/stat.h>
 #include <utils.hpp>
+#include "Server.hpp"
 
 Client::Client(int fd, PortListener& owner, EventLoop& eventLoop): _connectionEntry(fd), _owner(owner),
 	_mainEventLoop(eventLoop), _lastInteractionTime(time(NULL)){
@@ -184,10 +185,10 @@ void Client::_parseUri(const string& uri) {
 	if (normalizeStr(_requestLine.filePath) < 0) {
 			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 	}
-	_configServer->getFullPath(_requestLine.filePath);
-	if (_configServer.methodIsAllowed(_requestLine.filePath, _requestLine.method) == false) {
-			_buildNoBodyResponse("405", " Method Not Allowed", "Method is not allowed for the specified route", true);
-	}
+	//_configServer->getFullPath(_requestLine.filePath);
+	// if (_configServer.methodIsAllowed(_requestLine.filePath, _requestLine.method) == false) {
+	// 		_buildNoBodyResponse("405", " Method Not Allowed", "Method is not allowed for the specified route", true);
+	// }
 }
 
 void Client::_parseProtocol(const string& protocol) {
@@ -271,29 +272,29 @@ void	Client::_checkContentLength( void ) {
 	_contentLength = strtol(it->second.c_str(), &endptr, 10);
 	if (*endptr != '\0' || _contentLength < 0) {
 			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
-	} else if (_contentLength >= _configServer->getMaxBodySize) {
-			_buildNoBodyResponse("413", " Content Too Large", "Message Body is too large for the server configuration", true);
-	}
+	}// else if (_contentLength >= _configServer->getMaxBodySize) {
+	// 		_buildNoBodyResponse("413", " Content Too Large", "Message Body is too large for the server configuration", true);
+	// }
 }
 
 void Client::_managePostRequest( void ) {
-	if (*(_requestLine.uri.end() - 1) == '/') {
-		string	index = configServer->getIndexFile();
-		if (index == "") {
-			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
-			return ;
-		} else {
-			_requestLine.uri += _configServer.getIndexFile();
-		}
-	}
+	// if (*(_requestLine.uri.end() - 1) == '/') {
+	// 	string	index = configServer->getIndexFile();
+	// 	if (index == "") {
+	// 		_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
+	// 		return ;
+	// 	} else {
+	// 		_requestLine.uri += _configServer.getIndexFile();
+	// 	}
+	// }
 	string extension = _requestLine.uri.substr(_requestLine.uri.find_last_of("."),
 			_requestLine.uri.npos);
-	if (extension != "" && extension.find("/") == extension.npos
-			&& _configServer->isACgiExtension == true) {
+	// if (extension != "" && extension.find("/") == extension.npos
+	// 		&& _configServer->isACgiExtension == true) {
 			// do cgi things
-	} else {
+	// } else {
 		_processClassicPostRequest();
-	}
+	// }
 }
 
 void Client::_parseChunkedRequest(string requestPart) {
@@ -308,10 +309,11 @@ void Client::_parseChunkedRequest(string requestPart) {
 		}
 		requestPart.erase(0, chunk_size.size() + 2);
 		num_size = strtol(chunk_size.c_str(), &endptr, 16);
-		if (num_size >= _configServer->getMaxBodySize()) {
-			_buildNoBodyResponse("413", " Content Too Large", "Message Body is too large for the server configuration", true);
-			break ;
-		} else if (*endptr != '\0') {
+		// if (num_size >= _configServer->getMaxBodySize()) {
+		// 	_buildNoBodyResponse("413", " Content Too Large", "Message Body is too large for the server configuration", true);
+		// 	break ;
+	//	}
+		if (*endptr != '\0') {
 			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 			break ;
 		} else if (num_size == 0) {
@@ -333,26 +335,26 @@ void Client::_parseChunkedRequest(string requestPart) {
 
 void	Client::_manageGetRequest( void ) {
 	if (*(_requestLine.filePath.end() - 1) == '/') {
-		string	index = configServer->getIndexFile();
-		if (index == "") {
-			if (_configServer->isDirectoryListingAllowed == false) {
-				_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
-			} else {
+		//string	index = configServer->getIndexFile();
+		// if (index == "") {
+		// 	if (_configServer->isDirectoryListingAllowed == false) {
+		// 		_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
+		// 	} else {
 				_listDirectory();
-			}
-			return ;
-		} else {
-			_requestLine.filePath += _configServer.getIndexFile();
-		}
+	// 		}
+	// 		return ;
+	// 	} else {
+	// 		_requestLine.filePath += _configServer.getIndexFile();
+	// 	}
 	}
 	string extension = _requestLine.filePath.substr(_requestLine.uri.find_last_of("."),
 			_requestLine.filePath.npos);
-	if (extension != "" && extension.find("/") == extension.npos
-			&& _configServer->isACgiExtension == true) {
-			// do cgi things
-	} else {
+	// if (extension != "" && extension.find("/") == extension.npos
+	// 		&& _configServer->isACgiExtension == true) {
+	// 		// do cgi things
+	// } else {
 		_processClassicGetRequest(extension);
-	} 
+	// } 
 }
 
 void	Client::_processClassicGetRequest( string& extension ) {
@@ -517,11 +519,11 @@ void	Client::_manageDeleteRequest( void ) {
 }
 
 void Client::_buildNoBodyResponse(string status, string info, string body, bool isFatal) {
-	string	customPage = _configServer->getCustomStatusPage(status);
+	// string	customPage = _configServer->getCustomStatusPage(status);
 	bool		customPageIsPresent = false;
-	if (customPage != "") {
-		customPageIsPresent = _loadCustomStatusPage(customPage);
-	}
+	// if (customPage != "") {
+	// 	customPageIsPresent = _loadCustomStatusPage(customPage);
+	// }
 	if (customPageIsPresent == false) {
 		_bodyStream << "<!doctype html><title>" << status << info << "</title><h1>"
 			<< info << "</h1><p>" << body << "</p>";
@@ -574,7 +576,7 @@ void	Client::_fillResponse( string status, bool shouldClose ) {
 		}
 	}
 	_response << "HTTP/1.1 " << status << "\r\n";
-	_response << "Server: " << _configServer->getName() << "\r\n";
+	// _response << "Server: " << _configServer->getName() << "\r\n";
 	for (map<string, string>::iterator it = _responseHeader.begin(); it != _responseHeader.end(); ++it) {
 		_response << it->first << it->second << "\r\n";
 	} _response << "\r\n";
