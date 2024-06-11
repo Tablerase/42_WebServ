@@ -15,6 +15,7 @@
 # define CLIENT_HPP
 
 #include <cstddef>
+#include <ctime>
 #include <sstream>
 #include <string>
 # define BUFFER_SIZE 32000
@@ -36,7 +37,6 @@ typedef struct s_requestLine {
 	double	protocol;
 	string	filePath;
 	string	cgiQuery;
-	double	version;
 }							t_requestLine;
 
 class Client {
@@ -46,7 +46,8 @@ class Client {
 		Client(int fd, PortListener& owner, EventLoop& eventLoop);
 		~Client( void );
 
-		void	manageNewEvent( void );
+		void		manageNewEvent( void );
+		time_t	getLastInteractionTime( void ) const;
 
 		class CloseMeException : public exception {
 			public :
@@ -74,7 +75,6 @@ class Client {
 		void	_processClassicPostRequest( void );
 		bool	_checkExtensionMatch(const string& extension);
 		void	_listDirectory( void );
-		void	_buildGetResponse( void );
 		void	_buildNoBodyResponse(int status, string info, string body, bool isFatal);
 		bool	_loadCustomStatusPage(string path);
 		void	_fillResponse( string status, bool shouldClose );
@@ -106,7 +106,6 @@ class Client {
 		stringstream				_response;
 		stringstream				_bodyStream;
 		map<string, string>	_responseHeader;
-		int 								_returnCode;
 		bool								_responseIsReady;
 		bool								_connectionShouldBeClosed;
 };
