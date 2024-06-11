@@ -1,0 +1,8 @@
+WebServ
+
+.vscode
+
+*.o
+*.a
+*.so
+*.out
