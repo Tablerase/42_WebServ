@@ -147,29 +147,30 @@ int main() {
 			// << "Check for EPOLLOUT " << (receiver.events & EPOLLIN) << "Receiver events raw" << receiver.events << endl;
 			PortListener * const of_interest = getGoodListener(port1, port2, receiver.data.fd);
 			// cout << of_interest->hasPendingRequest() << endl;
-			if ((receiver.events & EPOLLOUT) && of_interest->hasPendingRequest() == 1) {
-				cout << "cc" << endl;
+			// if ((receiver.events & EPOLLOUT) && of_interest->hasPendingRequest() == 1) {
+			// 	cout << "cc" << endl;
 				of_interest->writeRequest(receiver.data.fd);
-				receiver.events = EPOLLIN;
-				epoll_ctl(epollfd, EPOLL_CTL_MOD, receiver.data.fd, &receiver);
-			} 
-			else if (receiver.events & EPOLLIN) {
-				cout << "cc" << endl;
-				try {
-					of_interest->readRequest(receiver.data.fd);
-					receiver.events |= EPOLLOUT;
-					epoll_ctl(epollfd, EPOLL_CTL_MOD, receiver.data.fd, &receiver);
-				} catch (runtime_error& e) {
-					std::cerr << e.what() << std::endl;
-					epoll_ctl(epollfd, EPOLL_CTL_DEL, receiver.data.fd, NULL);
-				}
-			}
-			else if ((receiver.events & EPOLLHUP) != 0) {
-				cout << "cc" << endl;
-				of_interest->closeClient(receiver.data.fd);
-				epoll_ctl(epollfd, EPOLL_CTL_DEL, receiver.data.fd, NULL);
-				cout << "Finito" << endl;
-			}
+			// 	receiver.events = EPOLLIN;
+			// 	epoll_ctl(epollfd, EPOLL_CTL_MOD, receiver.data.fd, &receiver);
+			// } 
+			
+			// else if (receiver.events & EPOLLIN) {
+			// 	cout << "cc" << endl;
+			// 	try {
+			// 		of_interest->readRequest(receiver.data.fd);
+			// 		receiver.events |= EPOLLOUT;
+			// 		epoll_ctl(epollfd, EPOLL_CTL_MOD, receiver.data.fd, &receiver);
+			// 	} catch (runtime_error& e) {
+			// 		std::cerr << e.what() << std::endl;
+			// 		epoll_ctl(epollfd, EPOLL_CTL_DEL, receiver.data.fd, NULL);
+			// 	}
+			// }
+			// else if ((receiver.events & EPOLLHUP) != 0) {
+			// 	cout << "cc" << endl;
+			// 	of_interest->closeClient(receiver.data.fd);
+			// 	epoll_ctl(epollfd, EPOLL_CTL_DEL, receiver.data.fd, NULL);
+			// 	cout << "Finito" << endl;
+			// }
 		}
 	}
 	delete port1;

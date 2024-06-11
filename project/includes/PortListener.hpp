@@ -15,11 +15,13 @@
 # define PORTLISTENER_HPP
 #include <EventLoop.hpp>
 #include <map>
+#include <sstream>
 #include <string>
-#include <unordered_map>
+
+#define TIMEOUT 5
 
 class Server;
-class Client;
+class Client; 
 
 class PortListener {
 	
@@ -30,20 +32,24 @@ class PortListener {
 		int						getSocketFd( void ) const;
 		const string&	getListeningPort( void ) const;
 		void					setMainEventLoop(EventLoop *ptr);
-		void					closeConnection(int fd);
 		Server*				getServer(const string& name) const;
+		void					getTimeout();
 
 		void	initSocket( void ); // Could be moved in the constructor but it depends
 		// how you'll implement it.
 		void	manageEvent( int fd);
 
-
 	private :
-		void	_acceptConnection( void );
+		void					_acceptConnection( void );
+		void					_writeMinimalAnswer( int fd, string status, string info, string body );
+		void					_sendMinimalAnswer( int fd, string Answer);
+		const string*	_thisNeedToSendAnswer(int fd);
+		void					_closeConnection(int fd);
 
 		map<string, Server *>	_serverMap;
 		string								_defaultServer;
 		map<int, Client *>		_clientMap;
+		map<int, string>			_immediateResponse;
 		int										_socketFd;
 		EventLoop*						_mainEventLoop;
 		string								_listeningPort;

@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "utils.hpp"
 #include <PortListener.hpp>
 #include <EventLoop.hpp>
 #include <Client.hpp>
@@ -107,21 +108,38 @@ void	PortListener::_acceptConnection( void ) {
 		return ;
 	}
 	if (clientFd > 1000) {
-		// Write Custom (503)
+		_writeMinimalAnswer(clientFd, "503", " Too Busy", "Server is too busy at the moment. try again later.");
 	}
 	Client* newClient;
 	try {
 		 newClient = new Client(clientFd, *this, *_mainEventLoop);	
 			_clientMap.insert(pair<int, Client *>(clientFd, newClient));
 	} catch (bad_alloc& e) {
-		// Write 501
+		_writeMinimalAnswer(clientFd, "500", " Internal Server Error",
+			"An internal Server error occured. Maybe you should try refresh the page ...");
 	} catch (exception& e) {
-		// Write 501
+		_writeMinimalAnswer(clientFd, "500", " Internal Server Error",
+			"An internal Server error occured. Maybe you should try refresh the page ...");
 		delete newClient;
 	}
 }
 
-void	PortListener::closeConnection(int fd) {
+void PortListener::_writeMinimalAnswer( int fd, string status,
+		string info , string body ) {
+	string messageBody = "<!doctype html><title>" + status + info + "</title><h1>"
+			+ info + "</h1><p>" + body + "</p>\r\n";	
+	stringstream response;
+	response << "HTTP/1.1 " << status << info << "\r\n";
+	response << "Date : " << getDate() << "\r\n";
+	response << "Content-Type: text/html" << "\r\n";
+	response << "Content-Length: " << messageBody.size() << "\r\n";
+	response << "Connection: close\r\n\r\n";
+	response << messageBody;
+	_immediateResponse.insert(pair<int, string>(fd, response.str()));
+	_mainEventLoop->addFdOfInterest(fd, this, EPOLLOUT);
+}
+
+void	PortListener::_closeConnection(int fd) {
 	map<int, Client *>::iterator it;
 	this->_mainEventLoop->deleteFdOfInterest(fd);
 	if ((it = _clientMap.find(fd)) != _clientMap.end()) {
@@ -131,20 +149,39 @@ void	PortListener::closeConnection(int fd) {
 	close (fd);
 }
 
+const string*	PortListener::_thisNeedToSendAnswer( int fd ) {
+	const map<int, string>::const_iterator it = _immediateResponse.find(fd);
+	if (it == _immediateResponse.end()) {
+		return (NULL);
+	} else {
+		return &(it->second);
+	}
+}
+
+void	PortListener::_sendMinimalAnswer(int fd, string answer) {
+	write(fd, answer.c_str(), answer.size());
+	close(fd);
+	_immediateResponse.erase(fd);
+	_mainEventLoop->deleteFdOfInterest(fd);
+}
+
 void	PortListener::manageEvent(int fd) {
 	map<int, Client*>::iterator it;
+	const string*								immediateResponse;
 	if (fd == _socketFd) {
 		try {
 			_acceptConnection();
 		} catch (runtime_error& e) {
 			cerr << "Connection Refused: " << e.what() << endl;
 		}
+	} else if ((immediateResponse = _thisNeedToSendAnswer(fd)) != NULL) {
+		_sendMinimalAnswer(fd, *immediateResponse);
 	} else {
 		try {
 			it->second->manageNewEvent();
 		} catch (exception& e) {
 			cerr << e.what() << endl;
-			closeConnection(fd);
+			_closeConnection(fd);
 		}
 	}
 	return ;
@@ -155,4 +192,16 @@ Server*	PortListener::getServer(const string& name) const {
 	if (it == _serverMap.end()) {
 		return (_serverMap.find(_defaultServer)->second);
 	} return (it->second);
+}
+
+void PortListener::getTimeout(void) {
+	time_t current;
+
+	time(&current);
+	for (map<int, Client*>::iterator it = _clientMap.begin();
+			it != _clientMap.end(); ++it) {
+		if (current - it->second->getLastInteractionTime() >= TIMEOUT) {	
+			_closeConnection(it->first);
+		}
+	}
 }

@@ -42,6 +42,7 @@ class EventLoop {
 
 		PortListener*	_getOwner(int fd);
 		static void		_sigIntCatcher( int signal );
+		void					_checkTimeouts();
 
 		map<const int, PortListener *>	_fdMap;
 		vector<PortListener *>					_PortListenerList;

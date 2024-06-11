@@ -157,7 +157,7 @@ void PortListener::writeRequest(int fd) {
 	_response += size;
 	_response += "\r\n\r\n";
 	ostringstream sstream;
-	 << index_file.rdbuf();
+	sstream << index_file.rdbuf();
 	_response += sstream.str();
 	cout << _response << endl;
 	write(fd, _response.c_str(), _response.size());

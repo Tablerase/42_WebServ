@@ -106,7 +106,16 @@ void EventLoop::loopForEvent( void ) {
 		}
 		for (int i = 0; i < received_events; ++i) {
 			_getOwner(_eventManager[i].data.fd)->manageEvent(_eventManager[i].data.fd);
+			_checkTimeouts();
 		}
+	}
+	return ;
+}
+
+void	EventLoop::_checkTimeouts() {
+	for (vector<PortListener *>::iterator it = _PortListenerList.begin();
+			it != _PortListenerList.end(); ++it) {
+		(*it)->getTimeout();
 	}
 	return ;
 }

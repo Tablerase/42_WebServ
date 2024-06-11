@@ -75,7 +75,7 @@ class Client {
 		void	_processClassicPostRequest( void );
 		bool	_checkExtensionMatch(const string& extension);
 		void	_listDirectory( void );
-		void	_buildNoBodyResponse(int status, string info, string body, bool isFatal);
+		void	_buildNoBodyResponse(string status, string info, string body, bool isFatal);
 		bool	_loadCustomStatusPage(string path);
 		void	_fillResponse( string status, bool shouldClose );
 		void	_generateContentExtension(string& path);

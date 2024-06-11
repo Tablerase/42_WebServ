@@ -86,16 +86,16 @@ void	Client::_readRequest( void ) {
 	}
 	if (thisReadAsBeenHandled == false && _responseIsReady == false) {
 		if (_bodyIsPresent == false) {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 		} else if (_requestIsChunked == true) {
 			_parseChunkedRequest(request.substr(bodyStart, request.npos));
 		} else {
 			_body += request.substr(bodyStart, request.npos);
 			if (_body.size() > _contentLength + 2) {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 			} else if (_body.size() == _contentLength + 2) {
 				if (_body.find_last_of("\r") != _contentLength && _body.find_last_of("\n") != _contentLength + 1) {
-					_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+					_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 				} else {
 					_bodyIsFullyRed = true;
 				}
@@ -122,7 +122,7 @@ void	Client::_parseRequest( void ) {
 	substituteSpaces(requestLine); substituteSpaces(host);
 	transform(host.begin(), host.end(), host.begin(), ::tolower);
 	if (_header.compare(0, 6, "host: ") != 0) {
-		_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+		_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 		return ;
 	}
 	_configServer = _owner.getServer(host.substr(host.find_first_of(" "), host.find_last_of(":")));	
@@ -169,45 +169,45 @@ void Client::_parseMethod(const string& method) {
 	if (i < 2) {
 		_requestLine.method = knownMethods[i];
 	} else if (i != 8) {
-			_buildNoBodyResponse(501, "501 Not Implemeted", "Requested method isn't implemented", false);
+			_buildNoBodyResponse("501", " Not Implemeted", "Requested method isn't implemented", false);
 	} else {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 	}
 	return ;
 }
 
 void Client::_parseUri(const string& uri) {
 	if (uri.size() > MAX_URI_SIZE) {
-		_buildNoBodyResponse(413, "413 Uri Too Loong", "Uri exceed max size", true);
+		_buildNoBodyResponse("413", " Uri Too Loong", "Uri exceed max size", true);
 	}
 	_requestLine.cgiQuery = uri.substr(uri.find_first_of("?", uri.npos));
 	if (normalizeStr(_requestLine.filePath) < 0) {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 	}
 	_configServer->getFullPath(_requestLine.filePath);
 	if (_configServer.methodIsAllowed(_requestLine.filePath, _requestLine.method) == false) {
-			_buildNoBodyResponse(405, "405 Method Not Allowed", "Method is not allowed for the specified route", true);
+			_buildNoBodyResponse("405", " Method Not Allowed", "Method is not allowed for the specified route", true);
 	}
 }
 
 void Client::_parseProtocol(const string& protocol) {
 	if (protocol.size() != 8) {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 	}
 	if (protocol.compare(0, 5, "HTTP/") != 0) {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 	}
 	char *endptr;
 	double	version;
 	version = strtod(protocol.c_str() + 5, &endptr);
 	if (version >= 2.0) {
-		_buildNoBodyResponse(505, "505 HTTP Protocol not supported", "Server protocol is HTTP/1.1", true);
+		_buildNoBodyResponse("505", " HTTP Protocol not supported", "Server protocol is HTTP/1.1", true);
 	} else if (version < 1.) {
 		_responseHeader.insert(pair<string, string>("Connection: ", "upgrade"));
 		_responseHeader.insert(pair<string, string>("Upgrade: ", "HTTP/1.1"));
-		_buildNoBodyResponse(426, "426 Upgrade Required", "This service require use of HTTP/1.1 protocol", true);	
+		_buildNoBodyResponse("426", " Upgrade Required", "This service require use of HTTP/1.1 protocol", true);	
 	} else if (*endptr != '\0') {
-		_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+		_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 	} else {
 		_requestLine.protocol = version;
 	} return ;
@@ -220,7 +220,7 @@ void	Client::_parseHeader( void ) {
 		_header.erase(0, _header.find("\r\n") + 2);
 		substituteSpaces(header_line);
 		if (header_line.find(":") == header_line.npos) {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 			return ;
 		}
 		field_value = header_line.substr(0, header_line.find_first_of(":"));
@@ -230,13 +230,13 @@ void	Client::_parseHeader( void ) {
 		}
 		transform(field_value.begin(), field_value.end(), field_value.begin(), ::tolower);
 		if (fieldValueHasForbiddenChar(field_value) == true) {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 			return ;
 		}
 		field_content.erase(0, field_content.find_first_not_of(" "));
 		field_content.erase(field_content.find_last_not_of(" ") + 1, field_content.npos);
 		if (fieldContentHasForbiddenChar(field_content) == true) {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 		}
 		normalizeStr(field_content);
 		_headerFields.insert(pair<string, string>(field_value, field_content));
@@ -250,7 +250,7 @@ void	Client::_checkForChunkedRequest( void ) {
 		return ;
 	}
 	if (it->second != "chunked") {
-		_buildNoBodyResponse(415, "415 Unsupported Media Type", "Only chunked encoding is allowed", true);
+		_buildNoBodyResponse("415", " Unsupported Media Type", "Only chunked encoding is allowed", true);
 	} else {
 		_requestIsChunked = true;
 	} return ;
@@ -262,17 +262,17 @@ void	Client::_checkContentLength( void ) {
 		_contentLength = 0;
 		return ;
 	} else if (_requestIsChunked == true) {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 	}
 	else if (it->second.size() > 11) {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 	}
 	char *endptr;
 	_contentLength = strtol(it->second.c_str(), &endptr, 10);
 	if (*endptr != '\0' || _contentLength < 0) {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 	} else if (_contentLength >= _configServer->getMaxBodySize) {
-			_buildNoBodyResponse(413, "413 Content Too Large", "Message Body is too large for the server configuration", true);
+			_buildNoBodyResponse("413", " Content Too Large", "Message Body is too large for the server configuration", true);
 	}
 }
 
@@ -280,7 +280,7 @@ void Client::_managePostRequest( void ) {
 	if (*(_requestLine.uri.end() - 1) == '/') {
 		string	index = configServer->getIndexFile();
 		if (index == "") {
-			_buildNoBodyResponse(403, "403 Forbidden", "Access to the ressource is forbidden", false);
+			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
 			return ;
 		} else {
 			_requestLine.uri += _configServer.getIndexFile();
@@ -303,27 +303,27 @@ void Client::_parseChunkedRequest(string requestPart) {
 	while (requestPart.size() != 0) {
 		chunk_size = requestPart.substr(0, requestPart.find("\r\n"));
 		if (requestPart.size() > 8) {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 			break ;
 		}
 		requestPart.erase(0, chunk_size.size() + 2);
 		num_size = strtol(chunk_size.c_str(), &endptr, 16);
 		if (num_size >= _configServer->getMaxBodySize()) {
-			_buildNoBodyResponse(413, "413 Content Too Large", "Message Body is too large for the server configuration", true);
+			_buildNoBodyResponse("413", " Content Too Large", "Message Body is too large for the server configuration", true);
 			break ;
 		} else if (*endptr != '\0') {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 			break ;
 		} else if (num_size == 0) {
 			if (requestPart.find("\r\n\r\n") != 0) {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 			} else {
 				_bodyIsFullyRed = true;
 				break ;
 			}
 		}
 		if (requestPart.find("\r\n") != num_size) {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 		}
 		_body += requestPart.substr(0, num_size);
 		requestPart.erase(0, num_size + 2);
@@ -336,7 +336,7 @@ void	Client::_manageGetRequest( void ) {
 		string	index = configServer->getIndexFile();
 		if (index == "") {
 			if (_configServer->isDirectoryListingAllowed == false) {
-				_buildNoBodyResponse(403, "403 Forbidden", "Access to the ressource is forbidden", false);
+				_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
 			} else {
 				_listDirectory();
 			}
@@ -359,38 +359,38 @@ void	Client::_processClassicGetRequest( string& extension ) {
 	_generateContentExtension(extension);	
 	if (_checkExtensionMatch(extension) == false) {
 		string allowedContent = "Content-Type: " + extension;
-		_buildNoBodyResponse(406, "406 Not Acceptable", allowedContent, false);
+		_buildNoBodyResponse("406", " Not Acceptable", allowedContent, false);
 		return ;
 	} 
 	struct stat buffer;
 	if(stat(_requestLine.filePath.c_str(), &buffer) != 0) {
 		if (errno == EACCES) {
-			_buildNoBodyResponse(403, "403 Forbidden", "Access to the ressource is forbidden", false);
+			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
 			return ;
 		} else if (errno == ENOENT) {
-			_buildNoBodyResponse(404, "404 Not Found", "Oops ! It seems there's nothing available here ...", false);
+			_buildNoBodyResponse("404", " Not Found", "Oops ! It seems there's nothing available here ...", false);
 			return ;
 		} else if (errno == ENOMEM) {
-			_buildNoBodyResponse(500, "500 Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+			_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
 			return ;
 		} else {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 			return ;
 		}
 	}
 	if (!(S_IRUSR & buffer.st_mode)) {
-			_buildNoBodyResponse(403, "403 Forbidden", "Access to the ressource is forbidden", false);
+			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
 		return ;
 	}
 	if (S_ISREG(buffer.st_mode) != true) {
-			_buildNoBodyResponse(409, "409 Conflict", "Conflict between the current state of the ressource and the asked one", false);
+			_buildNoBodyResponse("409", " Conflict", "Conflict between the current state of the ressource and the asked one", false);
 	}
 	stringstream size;
 	size << buffer.st_size;
 	ifstream toSend;
 	toSend.open(_requestLine.filePath);
 	if (toSend.fail()) {
-		_buildNoBodyResponse(500, "500 Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+		_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
 	}
 	_responseHeader.insert(pair<string, string>("Content-length: ", size.str()));
 	_bodyStream << toSend.rdbuf();
@@ -402,11 +402,11 @@ void Client::_listDirectory( void ) {
 	DIR*	directoryPtr = opendir(_requestLine.filePath.c_str());
 	if (directoryPtr == NULL) {
 		if (errno == ENOENT) {
-			_buildNoBodyResponse(404, "404 Not Found", "Oops ! It seems there's nothing available here ...", false);
+			_buildNoBodyResponse("404", " Not Found", "Oops ! It seems there's nothing available here ...", false);
 		} else if (errno == EACCES) {
-			_buildNoBodyResponse(403, "403 Forbidden", "Access to the ressource is forbidden", false);
+			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
 		} else {
-			_buildNoBodyResponse(500, "500 Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+			_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
 		}
 	}	
 	_requestLine.uri.erase(_requestLine.uri.find_first_of("?"), _requestLine.uri.npos);
@@ -470,26 +470,26 @@ void Client::_processClassicPostRequest( void ) {
 	struct stat buffer;	
 	if (stat(_requestLine.uri.c_str(), &buffer) != 0) {
 		if (errno == EACCES) {
-			_buildNoBodyResponse(403, "403 Forbidden", "Access to the ressource is forbidden", false);
+			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
 		} else if (errno == ENOENT) {
-			_buildNoBodyResponse(404, "404 Not Found", "Oops ! It seems there's nothing available here ...", false);
+			_buildNoBodyResponse("404", " Not Found", "Oops ! It seems there's nothing available here ...", false);
 		} else if (errno == ENOMEM) {
-			_buildNoBodyResponse(500, "500 Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+			_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
 		} else {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 		}
 	}
 	if (!(S_IWUSR & buffer.st_mode)) {
-			_buildNoBodyResponse(403, "403 Forbidden", "Access to the ressource is forbidden", false);
+			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
 	}
 	ofstream out;	
 	out.open(_requestLine.filePath);
 	if (out.fail()) {
-		_buildNoBodyResponse(500, "500 Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+		_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
 	} else {
 		out << _body;
 		out.close();
-		_buildNoBodyResponse(201, "201 Created", "Data Successefully Uploaded", false);
+		_buildNoBodyResponse("201", " Created", "Data Successefully Uploaded", false);
 	}
 }
 
@@ -497,26 +497,26 @@ void	Client::_manageDeleteRequest( void ) {
 	struct stat buffer;	
 	if (stat(_requestLine.uri.c_str(), &buffer) != 0) {
 		if (errno == EACCES) {
-			_buildNoBodyResponse(403, "403 Forbidden", "Access to the ressource is forbidden", false);
+			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
 		} else if (errno == ENOENT) {
-			_buildNoBodyResponse(404, "404 Not Found", "Oops ! It seems there's nothing available here ...", false);
+			_buildNoBodyResponse("404", " Not Found", "Oops ! It seems there's nothing available here ...", false);
 		} else if (errno == ENOMEM) {
-			_buildNoBodyResponse(500, "500 Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+			_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
 		} else {
-			_buildNoBodyResponse(400, "400 BadRequest", "Syntax error or ambiguous request", true);
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 		}
 	}
 	if (!(S_IWUSR & buffer.st_mode)) {
-			_buildNoBodyResponse(403, "403 Forbidden", "Access to the ressource is forbidden", false);
+			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
 	}
 	if (remove(_requestLine.filePath.c_str()) != 0) {
-		_buildNoBodyResponse(500, "500 Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+		_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
 	} else {
-		_buildNoBodyResponse(204, "204 No content", "No content to display", false);
+		_buildNoBodyResponse("204", " No content", "No content to display", false);
 	}
 }
 
-void Client::_buildNoBodyResponse(int status, string info, string body, bool isFatal) {	
+void Client::_buildNoBodyResponse(string status, string info, string body, bool isFatal) {
 	string	customPage = _configServer->getCustomStatusPage(status);
 	bool		customPageIsPresent = false;
 	if (customPage != "") {
@@ -531,9 +531,7 @@ void Client::_buildNoBodyResponse(int status, string info, string body, bool isF
 		_responseHeader.insert(pair<string, string>("Content-type: ", "text/html"));
 	}
 	_responseHeader.insert(pair<string, string>("Date: ", getDate()));
-	stringstream statusToStr;
-	statusToStr << status;
-	_fillResponse(statusToStr.str(), isFatal);
+	_fillResponse(status, isFatal);
 }
 
 bool Client::_loadCustomStatusPage(string path) {
