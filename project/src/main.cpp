@@ -6,7 +6,7 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/11 16:37:44 by rcutte            #+#    #+#             */
-/*   Updated: 2024/06/11 17:28:29 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/11 18:05:31 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,15 @@ void  CheckInput(int argc, char** argv){
 int main(int argc, char** argv, char **envp){
   CheckInput(argc, argv);
   
+  // Parsing
+  // vector<PortListener> listeners = ParseConfig(argv[1]);
+
+  // Event loop
+
   Server server;
-  std::cout << server << std::endl;
+  std::cout
+    << server 
+    << server.get_location("/")
+    << std::endl;
   (void)envp;
 }

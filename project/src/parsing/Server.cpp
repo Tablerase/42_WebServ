@@ -6,7 +6,7 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/11 12:16:35 by rcutte            #+#    #+#             */
-/*   Updated: 2024/06/11 15:55:52 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/11 17:57:59 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,16 @@ Server::Server()
   // Default server values
   name_ = "localhost";
   port_ = 80;
-  root_ = "";
+  location test;
+  test.path_ = "/";
+  test.redirect_ = false;
+  test.redirect_path_ = "";
+  test.root_ = "/var/www/html";
+  test.index_ = "index.html";
+  test.autoindex_ = false;
+  test.limit_except_.push_back("GET");
+  test.upload_path_ = "/var/www/html";
+  locations_.insert(std::pair<std::string, location>("/", test));
 }
 
 Server::~Server()
@@ -40,6 +49,14 @@ std::string const &Server::get_name() const {
 
 int const &Server::get_port() const {
   return this->port_;
+}
+
+std::map<std::string, location> const &Server::get_locations() const {
+  return this->locations_;
+}
+
+location const &Server::get_location(std::string const &path) const {
+  return this->locations_.at(path);
 }
 
 /* ================================ Setters ================================= */

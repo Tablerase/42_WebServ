@@ -6,7 +6,7 @@
 #    By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/08 18:08:42 by rcutte            #+#    #+#              #
-#    Updated: 2024/06/11 17:29:26 by rcutte           ###   ########.fr        #
+#    Updated: 2024/06/11 18:05:15 by rcutte           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -53,6 +53,7 @@ SRC = main.cpp \
 # 			Client.cpp \
 
 PARSING = parsing/Server.cpp \
+			parsing/Location.cpp \
 
 # EVENT = EventLoop.cpp \
 

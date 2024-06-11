@@ -6,7 +6,7 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/11 12:12:31 by rcutte            #+#    #+#             */
-/*   Updated: 2024/06/11 17:26:39 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/11 18:00:07 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,21 +27,22 @@
 
 struct location {
   // Path to the location
-  std::string path;
+  std::string path_;
 
   // Redirections
     // redirection false by default
-  bool        redirect;
-  std::string redirect_path;
+  bool        redirect_;
+  std::string redirect_path_;
 
   // Path infos
 
-  std::string                         root;
-  std::string                         index;
+  std::string                         root_;
+  std::string                         index_;
     // autoindex - directory listing false by default
-  bool                                autoindex;
+  bool                                autoindex_;
     // vector(method) - GET by default (Limited to: GET, POST, DELETE)
-  std::vector<std::string>            limit_except;
+  std::vector<std::string>            limit_except_;
+  std::string                         upload_path_;
 };
 
 class Server
@@ -51,16 +52,14 @@ private:
 
   std::string name_;
   int         port_;
-  std::string root_;
 
   /* Additional values */
-  
-  std::string                         index_;
+
   int                                 max_client_body_size_;
     // map(error_code, error_page_absolute_path)
   std::map<int, std::string>          error_pages_;
     // map(extension, absolue_path_to_bin)
-  std::map<std::string, std::string>  cgi;
+  std::map<std::string, std::string>  cgi_;
 
   /* Locations values */
     // map(path, location struct)
@@ -74,6 +73,8 @@ public:
 
   std::string const &get_name() const;
   int const         &get_port() const;
+  std::map<std::string, location> const &get_locations() const;
+  location const    &get_location(std::string const &path) const;
 
   // Setters
 
@@ -82,11 +83,13 @@ public:
 
   // Functions
 
-  void add_location(std::string const &path, location const &loc);
-  void add_error_page(int const &error_code, std::string const &error_page);
-  void add_cgi(std::string const &extension, std::string const &path_to_bin);
+  void AddLocation(std::string const &path, location const &loc);
+  void AddError_page(int const &error_code, std::string const &error_page);
+  void AddCgi(std::string const &extension, std::string const &path_to_bin);
 };
 
 std::ostream &operator<<(std::ostream &os, const Server &obj);
+
+std::ostream &operator<<(std::ostream &os, const location &obj);
 
 #endif
