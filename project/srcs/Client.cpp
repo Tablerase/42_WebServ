@@ -30,7 +30,20 @@
 Client::Client(int fd, PortListener& owner, EventLoop& eventLoop): _connectionEntry(fd), _owner(owner),
 	_mainEventLoop(eventLoop), _lastInteractionTime(time(NULL)){
 	memset(_buffer, 0, BUFFER_SIZE);
+	_requestLine.protocol = 0.;
+	_status = IDLE;
+	_bytesReadFromBody = 0;
+	_responseIsReady = false;
+	_connectionShouldBeClosed = true;
+	_headerIsFullyRed = false;
+	_bodyIsFullyRed = false;
+	_bodyIsPresent = false;
+	_requestIsChunked = false;
+	_contentLength = 0;
 	return ;
+}
+
+Client::~Client( void ) {
 }
 
 time_t	Client::getLastInteractionTime( void ) const {
@@ -583,21 +596,21 @@ void	Client::_sendAnswer( void ) {
 	_requestLine.cgiQuery.clear();
 	_requestLine.filePath.clear();
 	_requestLine.method.clear();
-	_requestLine.protocol = 0.;
 	_requestLine.uri.clear();
-	_status = IDLE;
-	_bytesReadFromBody = 0;
 	_header.clear();
 	_body.clear();
 	_headerFields.clear();
+	_response.clear();
+	_bodyStream.clear();
+	_responseHeader.clear();
+	_requestLine.protocol = 0.;
+	_status = IDLE;
+	_bytesReadFromBody = 0;
+	_responseIsReady = false;
+	_connectionShouldBeClosed = true;
 	_headerIsFullyRed = false;
 	_bodyIsFullyRed = false;
 	_bodyIsPresent = false;
 	_requestIsChunked = false;
 	_contentLength = 0;
-	_response.clear();
-	_bodyStream.clear();
-	_responseHeader.clear();
-	_responseIsReady = false;
-	_connectionShouldBeClosed = true;
 }

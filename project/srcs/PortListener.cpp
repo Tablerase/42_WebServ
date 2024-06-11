@@ -14,6 +14,7 @@
 #include <EventLoop.hpp>
 #include <Client.hpp>
 #include <algorithm>
+#include <cstdio>
 #include <iostream>
 #include <stdexcept>
 
@@ -96,7 +97,7 @@ void	PortListener::_acceptConnection( void ) {
 	int clientFd = accept(this->_socketFd, this->_address->ai_addr,
 			(socklen_t *)&this->_address->ai_addrlen);
 	if (clientFd < 0) {
-		throw runtime_error(strerror(errno));
+		cerr << "Failed connection to port" << _listeningPort << ":" << strerror(errno) << endl;
 	}
 	try {
 		_mainEventLoop->addFdOfInterest(clientFd, this, EPOLLIN);
@@ -108,16 +109,15 @@ void	PortListener::_acceptConnection( void ) {
 	if (clientFd > 1000) {
 		// Write Custom (503)
 	}
+	Client* newClient;
 	try {
-		Client* newClient = new Client(clientFd, *this, *_mainEventLoop);	
-		try {
+		 newClient = new Client(clientFd, *this, *_mainEventLoop);	
 			_clientMap.insert(pair<int, Client *>(clientFd, newClient));
-		} catch (exception& e) {
-			// Write 501
-			delete newClient;
-		}
-	} catch (runtime_error& e) {
+	} catch (bad_alloc& e) {
 		// Write 501
+	} catch (exception& e) {
+		// Write 501
+		delete newClient;
 	}
 }
 
