@@ -45,6 +45,7 @@ SRC_PATH = ./src
 
 SRC = main.cpp \
 		$(PARSING) \
+		PortListener.cpp \
 		# $(SOCKET) \
 		# $(EVENT) \
 		# $(UTILS) \
@@ -54,6 +55,14 @@ SRC = main.cpp \
 
 PARSING = parsing/Server.cpp \
 			parsing/Location.cpp \
+			parsing/parsing.cpp \
+			parsing/parsing_alreadyseen.cpp \
+			parsing/parsing_boolean_utils.cpp \
+			parsing/parsing_create_location_block.cpp \
+			parsing/parsing_create_server_fields.cpp \
+			parsing/parsing_location_block.cpp \
+			parsing/parsing_server_fields.cpp \
+			parsing/parsing_utils.cpp \
 
 # EVENT = EventLoop.cpp \
 

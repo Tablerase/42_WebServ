@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Server.hpp"
+#include <ExternLibrary.hpp>
 
 /* ======================== Constructor / Destructor ======================== */
 
@@ -23,7 +24,7 @@ Server::Server()
   name_ = "localhost";
   port_ = 80;
   location test;
-  test.path_ = "/";
+  test.path_ = "_";
   test.redirect_ = false;
   test.redirect_path_ = "";
   test.root_ = "/var/www/html";
@@ -31,7 +32,7 @@ Server::Server()
   test.autoindex_ = false;
   test.limit_except_.push_back("GET");
   test.upload_path_ = "/var/www/html";
-  locations_.insert(std::pair<std::string, location>("/", test));
+  locations_.insert(std::pair<std::string, location>("_", test));
 }
 
 Server::~Server()
@@ -71,9 +72,33 @@ void Server::set_port(int const &port) {
   this->port_ = port;
 }
 
+void Server::set_max_client_body_size(int const &size) {
+  if (size < 0)
+    throw invalid_argument("Max body size should be a positive number.");
+  this->max_client_body_size_ = size;
+}
+
 /* =============================== Functions ================================ */
 
+void Server::AddError_page(int const & error_code, string const & error_page) {
+  if (is_valid_http_error_code(error_code) == false)
+    throw std::invalid_argument("Invalid error code.");
+  try {
+    error_pages_.at(error_code);
+    throw runtime_error("multiple error_page with the same error code.");
+  }
+  catch (out_of_range & oor) {}
+  this->error_pages_.insert(make_pair(error_code, error_page));
+}
 
+void Server::AddLocation(string const & path, location const & loc) {
+  try {
+    this->locations_.at(path);
+    throw runtime_error("multiple location blocks with the same path.");
+  }
+  catch (std::out_of_range & oor) {}
+  this->locations_.insert(make_pair(path, loc));
+}
 
 /* =============================== Exceptions =============================== */
 
@@ -86,5 +111,10 @@ std::ostream &operator<<(std::ostream &os, const Server &obj){
     << YELB << "🗄️ Server" << RESET << " "
     << BYEL << obj.get_name() << RESET
     << " listening to port: " << BBLU << obj.get_port() << RESET << "\n";
+  
+  os << endl;
+  for (map<string,location>::const_iterator it = obj.get_locations().begin(); it != obj.get_locations().end(); ++it)
+    os << it->second << " ";
+  os << endl;
   return os;
 }

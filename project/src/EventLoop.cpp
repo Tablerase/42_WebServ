@@ -85,6 +85,7 @@ PortListener*	EventLoop::_getOwner(int fd) {
 
 void EventLoop::_sigIntCatcher( int signal ) {
 	_serverIsRunning = false;
+	(void)signal;
 }
 
 void EventLoop::loopForEvent( void ) {
@@ -110,6 +111,7 @@ void EventLoop::loopForEvent( void ) {
 		}
 	}
 	return ;
+	(void)func;
 }
 
 void	EventLoop::_checkTimeouts() {

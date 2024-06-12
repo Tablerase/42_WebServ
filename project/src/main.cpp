@@ -31,14 +31,17 @@ int main(int argc, char** argv, char **envp){
   if (CheckInput(argc, argv) == false ) { return EXIT_FAILURE; };
 
   // Parsing
-  // vector<PortListener> listeners = ParseConfig(argv[1]);
+  vector<PortListener> listeners = ParseConfig(argv[1]);
+  for (vector<PortListener>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
+    cout << *it << endl;
+  }
 
   // Event loop
 
   Server server;
   std::cout
     << server 
-    << server.get_location("/")
+    << server.get_location("_")
     << std::endl;
   (void)envp;
 }
