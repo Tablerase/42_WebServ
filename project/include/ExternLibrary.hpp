@@ -15,20 +15,32 @@
 # define EXTERNLIBRARY_HPP
 
 
-#include <asm-generic/socket.h>
 #include <cctype>
 #include <cstring>
 #include <csignal>
-#include <stdexcept>
-#include <strings.h>
+#include <cerrno>
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
 #include <ctime>
+#include <stdexcept>
+#include <unistd.h>
+#include <asm-generic/socket.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/epoll.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <unistd.h>
+#include <sys/epoll.h>
+#include <sys/stat.h>
 #include <fcntl.h>
+#include <algorithm>
+#include <fcntl.h>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <dirent.h>
+#include "Server.hpp"
 
 #endif
