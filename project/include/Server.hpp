@@ -67,6 +67,8 @@ struct already_seen_server {
 struct location {
   // Path to the location
   std::string path_;
+  // vector(method) - GET by default (Limited to: GET, POST, DELETE)
+  std::vector<std::string>            limit_except_;
 
   // Redirections
     // redirection false by default
@@ -79,8 +81,6 @@ struct location {
   std::string                         index_;
     // autoindex - directory listing false by default
   bool                                autoindex_;
-    // vector(method) - GET by default (Limited to: GET, POST, DELETE)
-  std::vector<std::string>            limit_except_;
   std::string                         upload_path_;
 };
 
