@@ -6,7 +6,7 @@
 #    By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/08 18:08:42 by rcutte            #+#    #+#              #
-#    Updated: 2024/06/11 18:30:03 by rcutte           ###   ########.fr        #
+#    Updated: 2024/06/12 11:42:50 by rcutte           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -35,6 +35,7 @@ INCLUDES = -I$(INC_PATH)
 
 HEADERS_FILES = color.h \
 				Server.hpp \
+				parsing.hpp \
 
 # Headers files (rule to recompile if headers have changed)
 HEADERS = $(addprefix $(INC_PATH)/,$(HEADERS_FILES))
@@ -45,6 +46,7 @@ SRC_PATH = ./src
 
 SRC = main.cpp \
 		$(PARSING) \
+		$(SERVER) \
 		PortListener.cpp \
 		# $(SOCKET) \
 		# $(EVENT) \
@@ -53,9 +55,7 @@ SRC = main.cpp \
 # SOCKET = PortListener.cpp \
 # 			Client.cpp \
 
-PARSING = parsing/Server.cpp \
-			parsing/Location.cpp \
-			parsing/parsing.cpp \
+PARSING = parsing/parsing.cpp \
 			parsing/parsing_alreadyseen.cpp \
 			parsing/parsing_boolean_utils.cpp \
 			parsing/parsing_create_location_block.cpp \
@@ -63,6 +63,9 @@ PARSING = parsing/Server.cpp \
 			parsing/parsing_location_block.cpp \
 			parsing/parsing_server_fields.cpp \
 			parsing/parsing_utils.cpp \
+
+SERVER = server/Server.cpp \
+			server/Location.cpp \
 
 # EVENT = EventLoop.cpp \
 
