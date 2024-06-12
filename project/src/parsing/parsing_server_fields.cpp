@@ -60,22 +60,26 @@ default:
 }
 
 bool is_virtual_server_correctly_set(ifstream & config_file) {
-string line;
+string line = "";
 size_t pos = 0;
-while (1) {
+while (config_file.eof() == false) {
     getline(config_file, line);
-    if (line.find_first_not_of("server{ \t\n\v\f\r") != string::npos)
-    return false;
     if (line.find_first_not_of(" \t\n\v\f\r") != string::npos) {
-    if (line.find("server") != 0 || line.find_last_of("server") != 5)
+      if (line.find_first_not_of("server{ \t\n\v\f\r") != string::npos)
         return false;
-    pos = line.find("{");
-    if (pos == string::npos && line.find_first_not_of(" \t\n\v\f\r", 6) == string::npos)
-        return found_close_bracket_on_next_line(config_file);
-    if (line.find_first_not_of(" \t\n\v\f\r", pos + 1) != string::npos)
-        return false;
-    return true;
+      if (line.find_first_not_of(" \t\n\v\f\r") != string::npos) {
+        if (line.find("server") != 0 || line.find_last_of("server") != 5)
+          return false;
+      pos = line.find("{");
+      if (pos == string::npos && line.find_first_not_of(" \t\n\v\f\r", 6) == string::npos)
+          return found_close_bracket_on_next_line(config_file);
+      if (line.find_first_not_of(" \t\n\v\f\r", pos + 1) != string::npos)
+          return false;
+      if (config_file.eof() == true)
+        throw runtime_error("unclosed bracket.");
+      return true;
     }
+  }
 }
 return true;
 }

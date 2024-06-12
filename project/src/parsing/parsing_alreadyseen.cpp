@@ -9,6 +9,8 @@ already_seen_location bzero_alreadyseenlocation() {
   l.autoindex_ = false;
   l.limit_except_ = false;
   l.upload_path_ = false;
+  l.cgi_.insert(make_pair(".py", false));
+  l.cgi_.insert(make_pair(".rb", false));
   return l;
 }
 

@@ -21,19 +21,22 @@ Server::Server()
   #ifdef LOG
   std::cout << BLUB << "🗄️ Constructor Server by default" << RESET << "\n";
   #endif
+  this->name_ = "_";
+  this->port_ = 80;
+  this->max_client_body_size_ = 1;
   // Default server values
-  name_ = "localhost";
-  port_ = 80;
-  location test;
-  test.path_ = "_";
-  test.redirect_ = false;
-  test.redirect_path_ = "";
-  test.root_ = "/var/www/html";
-  test.index_ = "index.html";
-  test.autoindex_ = false;
-  test.limit_except_.push_back("GET");
-  test.upload_path_ = "/var/www/html";
-  locations_.insert(std::pair<std::string, location>("_", test));
+  // name_ = "localhost";
+  // port_ = 80;
+  // location test;
+  // test.path_ = "/";
+  // test.redirect_ = false;
+  // test.redirect_path_ = "";
+  // test.root_ = "/var/www/html";
+  // test.index_ = "index.html";
+  // test.autoindex_ = false;
+  // test.limit_except_.push_back("GET");
+  // test.upload_path_ = "/var/www/html";
+  // locations_.insert(std::pair<std::string, location>("/", test));
 }
 
 Server::~Server()
@@ -59,6 +62,13 @@ std::map<std::string, location> const &Server::get_locations() const {
 
 location const &Server::get_location(std::string const &path) const {
   return this->locations_.at(path);
+}
+
+map<int,string> const & Server::get_error_pages() const {
+  return this->error_pages_;
+}
+int const & Server::get_max_client_body_size() const {
+  return this->max_client_body_size_;
 }
 
 /* ================================ Setters ================================= */
@@ -107,6 +117,16 @@ void Server::AddLocation(string const & path, location const & loc) {
 
 /* ================================= Output ================================= */
 
+ostream &operator<<(ostream & os, const map<int,string> error_pages) {
+  os << "Error pages :\n";
+  if (error_pages.empty() == true)
+    return os;
+  for (map<int,string>::const_iterator it = error_pages.begin(); it != error_pages.end(); ++it) {
+    os << REDB << it->first << RESET << " : " << it->second << endl;
+  }
+  return os;
+}
+
 std::ostream &operator<<(std::ostream &os, const Server &obj){
   os
     << YELB << "🗄️ Server" << RESET << " "
@@ -114,8 +134,13 @@ std::ostream &operator<<(std::ostream &os, const Server &obj){
     << " listening to port: " << BBLU << obj.get_port() << RESET << "\n";
   
   os << endl;
-  for (map<string,location>::const_iterator it = obj.get_locations().begin(); it != obj.get_locations().end(); ++it)
-    os << it->second << " ";
+
+  os << obj.get_error_pages() << endl;
+  os << "Max client body size : " << obj.get_max_client_body_size() << "Mb" << endl;
+
   os << endl;
+
+  for (map<string,location>::const_iterator it = obj.get_locations().begin(); it != obj.get_locations().end(); ++it)
+    os << it->second << endl;
   return os;
 }

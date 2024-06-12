@@ -28,21 +28,31 @@ bool  CheckInput(int argc, char** argv){
   }
 }
 
-int main(int argc, char** argv, char **envp){
+int main(int argc, char** argv){
   if (CheckInput(argc, argv) == false ) { return EXIT_FAILURE; };
 
   // Parsing
   vector<PortListener> listeners = ParseConfig(argv[1]);
   for (vector<PortListener>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-    cout << *it << endl;
+    cout << *it;
   }
 
   // Event loop
 
-  Server server;
-  std::cout
-    << server
-    << server.get_location("_")
-    << std::endl;
-  (void)envp;
+  // Server server;
+  // std::cout
+  //   << server
+  //   << server.get_location("/")
+  //   << std::endl;
 }
+
+/*
+[ TO CHECK ] set default values
+test everything
+check for missing fields that are mandatory (location is ?)
+empty server valid ?
+[ OK ] patch unclosed brackets
+[ OK ] patch empty line
+[ OK ] cgi field
+[ OK ] not allow same port on same server_name
+*/

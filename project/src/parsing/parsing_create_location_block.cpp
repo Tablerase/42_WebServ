@@ -79,9 +79,14 @@ void initUploadPathLocation(location & location_block, already_seen_location & a
 void initCgiLocation(location & location_block, already_seen_location & as, vector<string> & arguments) {
   if (arguments.size() != 2)
     throw runtime_error("'cgi' field wrong number of arguments.");
-  cout << "cgi not handeled yet." << endl;
-  (void)location_block;
-  (void)as;
-  (void)arguments;
+  if (as.cgi_[arguments.front()] == true)
+    throw runtime_error("multiple definition of the same cgi extension in location block.");
+  if (is_allowed_cgi_extension(arguments.front()) == false) {
+    string error_message = "'cgi' field, " + arguments.front() + " is not a valid extension.";
+    throw runtime_error(error_message);
+  }
+  as.cgi_[arguments.front()] = true;
+  location_block.cgi_.insert(make_pair(arguments.front(), arguments.back()));
+
   return ;
 }

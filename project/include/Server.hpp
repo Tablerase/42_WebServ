@@ -13,19 +13,6 @@
 #ifndef SERVER_H_
 # define SERVER_H_
 
-# define FIELD_ALLOWED_METHODS 0
-# define FIELD_RETURN 1
-# define FIELD_INDEX 2
-# define FIELD_ROOT 3
-# define FIELD_AUTOINDEX 4
-# define FIELD_UPLOAD_FILE_PATH 5
-# define FIELD_CGI 6
-
-# define FIELD_LISTEN 0
-# define FIELD_SERVER_NAME 1
-# define FIELD_ERROR_PAGE 2
-# define FIELD_CLIENT_MAX_BODY_SIZE 3
-
 # include <iostream>
 # include <fstream>
 # include <iomanip>
@@ -48,7 +35,7 @@ struct already_seen_location {
   bool autoindex_;
   bool limit_except_;
   bool upload_path_;
-  bool cgi_;
+  map<string,bool> cgi_;
 };
 
 struct access_seen {
@@ -82,6 +69,8 @@ struct location {
     // autoindex - directory listing false by default
   bool                                autoindex_;
   std::string                         upload_path_;
+    // map(extension, absolue_path_to_bin)
+  std::map<std::string, std::string>  cgi_;
 };
 
 class Server
@@ -97,8 +86,6 @@ private:
   int                                 max_client_body_size_;
     // map(error_code, error_page_absolute_path)
   std::map<int, std::string>          error_pages_;
-    // map(extension, absolue_path_to_bin)
-  std::map<std::string, std::string>  cgi_;
 
   /* Locations values */
     // map(path, location struct)
@@ -114,6 +101,9 @@ public:
   int const         &get_port() const;
   std::map<std::string, location> const &get_locations() const;
   location const    &get_location(std::string const &path) const;
+  map<int,string> const &get_error_pages() const;
+  int const         &get_max_client_body_size() const;
+  
 
   // Setters
 

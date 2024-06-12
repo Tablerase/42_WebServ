@@ -44,7 +44,7 @@ const string& PortListener::getListeningPort( void ) const {
 	return(_listeningPort);
 }
 
-map<string, Server *> &	PortListener::getServerMap( void ) {
+map<string, Server> &	PortListener::getServerMap( void ) {
 	return(_serverMap);
 }
 
@@ -174,7 +174,7 @@ map<string, Server *> &	PortListener::getServerMap( void ) {
 // 	map<int, Client*>::iterator it;
 // 	const string*								immediateResponse;
 // 	if (fd == _socketFd) {
-// 		try {
+// 		try {years
 // 			_acceptConnection();
 // 		} catch (runtime_error& e) {
 // 			cerr << "Connection Refused: " << e.what() << endl;
@@ -211,25 +211,38 @@ map<string, Server *> &	PortListener::getServerMap( void ) {
 // 	}
 // }
 
-void PortListener::addServerToMap(Server * new_server) {
+void PortListener::addServerToMap(Server & new_server) {
 	try {
-		this->_serverMap.at(new_server->get_name());
+		this->_serverMap.at(new_server.get_name());
 		throw runtime_error("Multiple definition of the same server_name.");
 	}
 	catch (out_of_range & oor) {}
-	this->_serverMap.insert(make_pair(new_server->get_name(), new_server));
+	this->_serverMap.insert(make_pair(new_server.get_name(), new_server));
 	stringstream ss;
-	ss << new_server->get_port();
+	ss << new_server.get_port();
 	string ret;
 	ss >> ret;
 	this->_listeningPort = ret;
 }
 
+void PortListener::setDefaultServer(const string & default_server) {
+	this->_defaultServer = default_server;
+}
+
+const string & PortListener::getDefaultServer() const {
+	return this->_defaultServer;
+}
+
 ostream & operator<<(ostream & os, PortListener & listener) {
-	os << "PORT LISTENER" << endl;
-	os << "port: " << listener.getListeningPort() << endl;
-	for (map<string, Server *>::iterator it = listener.getServerMap().begin(); it != listener.getServerMap().end(); ++it) {
-		os << "Server name: '" << it->first << "' " << it->second << endl;
+	os << "--------------------------------------------\n";
+	os << "               PORT LISTENER" << endl;
+	os << "                 port: " << listener.getListeningPort() << endl;
+	os << "--------------------------------------------\n\n";
+
+	os << "default server : " << listener.getDefaultServer() << endl << endl;
+
+	for (map<string, Server>::iterator it = listener.getServerMap().begin(); it != listener.getServerMap().end(); ++it) {
+		os << it->second;
 	}
 	return os;
 }

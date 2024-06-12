@@ -37,5 +37,7 @@ std::ostream &operator<<(std::ostream &out, const location &obj){
     out << *i << ' ';
   out << std::endl;
   out << "Upload path: " << obj.upload_path_ << std::endl;
+  for (map<string,string>::const_iterator it = obj.cgi_.begin(); it != obj.cgi_.end(); ++it)
+    out << "CGI: " << it->first << " -> " << it->second << endl;
   return out;
 }

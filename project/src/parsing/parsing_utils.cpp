@@ -79,10 +79,15 @@ location bzero_location(string & path) {
 }
 
 string mandatory_fields_missing(already_seen_location asl) {
-  if (asl.root_ == false)
-    return "root";
-  if (asl.index_ == false)
-    return "index";
+  // if (asl.root_ == false)
+  //   return "root";
+  // if (asl.index_ == false)
+  //   return "index";
+  if (asl.index_ == false && asl.autoindex_ == false
+    && asl.cgi_[".py"] == false && asl.cgi_[".rb"] == false && asl.limit_except_ == false
+    && asl.redirect_ == false && asl.root_ == false
+    && asl.upload_path_ == false)
+      return "root";
   return "";
 }
 

@@ -34,7 +34,7 @@ Server parse_virtual_server(ifstream & config_file) {
   already_seen_server as;
   as = bzero_alreadyseenserver();
 
-  while (is_close_bracket(line) == false) {
+  while (config_file.eof() == false && is_close_bracket(line) == false) {
     location_path = check_for_location_field(line, config_file);
     if (location_path != "")
       parse_location_block(virtual_server, config_file, location_path);
@@ -42,18 +42,21 @@ Server parse_virtual_server(ifstream & config_file) {
       parse_virtual_server_field(virtual_server, line, as);
     getline(config_file, line);
   }
+  if (config_file.eof() == true && is_close_bracket(line) == false)
+    throw runtime_error("unclosed bracket.");
   return virtual_server;
 }
 
 void add_virtual_server_to_listeners(vector<PortListener> & listeners, Server & server) {
     for (vector<PortListener>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
         if (string_to_int(it->getListeningPort()) == server.get_port()) {
-            it->addServerToMap(&server);
+            it->addServerToMap(server);
             return ;
         }
     }
     listeners.push_back(PortListener());
-    listeners.back().addServerToMap(&server);
+    listeners.back().addServerToMap(server);
+    listeners.back().setDefaultServer(server.get_name());
     return ;
 }
 
@@ -63,15 +66,15 @@ vector<PortListener> read_config_file(ifstream & config_file) {
   while (config_file.eof() == false) {
     if (is_virtual_server_correctly_set(config_file) == false)
       throw runtime_error("'server' field not correctly formated.");
+    if (config_file.eof() == true)
+      break ;
     Server virtual_server = parse_virtual_server(config_file);
-    // cout << virtual_server << endl;
     add_virtual_server_to_listeners(listeners, virtual_server);
   }
   return listeners;
 }
 
 vector<PortListener> ParseConfig(string file_name) {
-  #define LOG
   try {
     ifstream config_file(file_name.c_str());
     if (config_file.is_open() == false)

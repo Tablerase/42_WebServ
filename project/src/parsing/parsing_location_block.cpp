@@ -13,19 +13,22 @@ void parse_location_block(Server & virtual_server, ifstream & config_file, strin
   new_location_block.second = bzero_location(location_path);
   as = bzero_alreadyseenlocation();
   getline(config_file, line);
-  while (is_close_bracket(line) == false) {
-    new_field = parse_line_inside_location(line);
-    if (new_field != empty_pair())
-      add_field_to_location(new_location_block.second, as, new_field);
+  while (config_file.eof() == false && is_close_bracket(line) == false) {
+    if (line.find_first_not_of(" \t\n\v\f\r") != string::npos) {
+      new_field = parse_line_inside_location(line);
+      if (new_field != empty_pair())
+        add_field_to_location(new_location_block.second, as, new_field);
+    }
     getline(config_file, line);
   }
+  if (config_file.eof() == true && is_close_bracket(line) == false)
+    throw runtime_error("unclosed bracket.");
   missing_method = mandatory_fields_missing(as);
   if (missing_method != "") {
     string error_message = "'" + missing_method + "' field is missing in location block";
     throw runtime_error(error_message);
   }
   virtual_server.AddLocation(new_location_block.first, new_location_block.second);
-  cout << new_location_block.second << endl;
 }
 
 vector<string> location_fields_vector() {

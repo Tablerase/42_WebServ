@@ -33,7 +33,7 @@ class PortListener {
 
 		int						getSocketFd( void ) const;
 		const string&	getListeningPort( void ) const;
-		map<string, Server *> &	getServerMap( void );
+		map<string, Server> &	getServerMap( void );
 		// void					setMainEventLoop(EventLoop *ptr);
 		// Server*				getServer(const string& name) const;
 		// void					getTimeout();
@@ -41,8 +41,10 @@ class PortListener {
 		// void	initSocket( void ); // Could be moved in the constructor but it depends
 		// // how you'll implement it.
 		// void	manageEvent( int fd);
-        void                    addServerToMap(Server * new_server);
+        void                    addServerToMap(Server & new_server);
 		void					printServerMap() const;
+		void					setDefaultServer(const string & default_server);
+		const string &          getDefaultServer() const;
 
 	private :
 		// void					_acceptConnection( void );
@@ -51,7 +53,7 @@ class PortListener {
 		// const string*	_thisNeedToSendAnswer(int fd);
 		// void					_closeConnection(int fd);
 
-		map<string, Server *>	_serverMap;
+		map<string, Server>	_serverMap;
 		string								_defaultServer;
 		// map<int, Client *>		_clientMap;
 		map<int, string>			_immediateResponse;

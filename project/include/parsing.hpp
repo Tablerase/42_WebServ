@@ -15,6 +15,19 @@
 
 # include "Server.hpp"
 
+# define FIELD_ALLOWED_METHODS 0
+# define FIELD_RETURN 1
+# define FIELD_INDEX 2
+# define FIELD_ROOT 3
+# define FIELD_AUTOINDEX 4
+# define FIELD_UPLOAD_FILE_PATH 5
+# define FIELD_CGI 6
+
+# define FIELD_LISTEN 0
+# define FIELD_SERVER_NAME 1
+# define FIELD_ERROR_PAGE 2
+# define FIELD_CLIENT_MAX_BODY_SIZE 3
+
 // ===================== PARSING.CPP =====================
 
 pair<string, vector<string> > get_method_line(

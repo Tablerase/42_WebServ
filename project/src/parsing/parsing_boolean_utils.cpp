@@ -45,7 +45,7 @@ bool is_valid_limit_except_componant(string & current_method, access_seen & as) 
 }
 
 bool is_allowed_cgi_extension(string & extension) {
-  return (extension == ".php"); // for ex
+  return (extension == ".py" || extension == ".rb"); // for ex
 }
 
 bool is_valid_http_error_code(int error_code) {
