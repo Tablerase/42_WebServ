@@ -6,7 +6,7 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/11 12:16:35 by rcutte            #+#    #+#             */
-/*   Updated: 2024/06/12 11:32:56 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/13 12:11:24 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,9 +64,32 @@ location const &Server::get_location(std::string const &path) const {
   return this->locations_.at(path);
 }
 
+/**
+ * @brief Get the error pages map
+ * @return map<int,string>: the error pages map
+*/
 map<int,string> const & Server::get_error_pages() const {
   return this->error_pages_;
 }
+
+/**
+ * @brief Get the error page absolute path from the error code
+ * @param error_code
+ * @return string: the absolute path to the error page
+ * @note If the error code is not found, return an empty string
+*/
+string const & Server::get_error_page(int const & error_code) const {
+  string result;
+  try {
+    result = this->error_pages_.at(error_code);
+    return result;
+  }
+  catch (out_of_range & oor) {
+    result = "";
+    return result;
+  }
+}
+
 int const & Server::get_max_client_body_size() const {
   return this->max_client_body_size_;
 }

@@ -6,7 +6,7 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/11 12:12:31 by rcutte            #+#    #+#             */
-/*   Updated: 2024/06/12 11:41:01 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/13 12:02:35 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,7 @@ public:
   std::map<std::string, location> const &get_locations() const;
   location const    &get_location(std::string const &path) const;
   map<int,string> const &get_error_pages() const;
+  string const      &get_error_page(int const &error_code) const;
   int const         &get_max_client_body_size() const;
   
 
