@@ -16,6 +16,7 @@
 #include <sys/epoll.h>
 #include <utility>
 #include <PortListener.hpp>
+#include "Client.hpp"
 
 
 EventLoop::EventLoop( void ) {
@@ -87,8 +88,7 @@ void EventLoop::_sigIntCatcher( int signal ) {
 	_serverIsRunning = false;
 }
 
-void EventLoop::loopForEvent( void ) {
-	void (EventLoop::*func)(int);
+int EventLoop::loopForEvent( void ) {
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGINT, _sigIntCatcher);
 	_serverIsRunning = true;
@@ -105,11 +105,16 @@ void EventLoop::loopForEvent( void ) {
 			continue ;
 		}
 		for (int i = 0; i < received_events; ++i) {
-			_getOwner(_eventManager[i].data.fd)->manageEvent(_eventManager[i].data.fd);
+			try {
+				_getOwner(_eventManager[i].data.fd)->manageEvent(_eventManager[i].data.fd);
+			} catch (Client::ChildIsExiting& e) {
+				cerr << e.what() << endl;
+				return (1);
+			}
 			_checkTimeouts();
 		}
 	}
-	return ;
+	return (0);
 }
 
 void	EventLoop::_checkTimeouts() {

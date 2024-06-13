@@ -29,6 +29,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/epoll.h>
+#include <sys/wait.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <netdb.h>

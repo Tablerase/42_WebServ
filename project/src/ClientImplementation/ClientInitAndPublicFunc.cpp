@@ -10,7 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "PortListener.hpp"
 #include <Client.hpp>
+#include <ctime>
 
 Client::Client(int fd, PortListener& owner, EventLoop& eventLoop): _connectionEntry(fd), _owner(owner),
 	_mainEventLoop(eventLoop), _lastInteractionTime(time(NULL)){
@@ -29,10 +31,31 @@ Client::Client(int fd, PortListener& owner, EventLoop& eventLoop): _connectionEn
 }
 
 Client::~Client( void ) {
+	if (_cgiInfilePath != "") {
+		remove(_cgiInfilePath.c_str());
+	}
+	if (_cgiOutFilePath != "") {
+		remove(_cgiOutFilePath.c_str());
+	}
 }
 
-time_t	Client::getLastInteractionTime( void ) const {
-	return (_lastInteractionTime);
+bool	Client::isCLientTimeout( void ) {
+	const int timeSinceLastAction = time(NULL) - _lastInteractionTime;
+	bool	ret = false;
+
+	if (_lastInteractionTime >= TIMEOUT) {
+		if (_cgiIsRunning == false) {
+			ret = true;
+		} else {
+			_killCgi();
+			_lastInteractionTime = time(NULL);
+		}
+	} else {
+		if (_cgiIsRunning == true) {
+			_checkCgiStatus();
+		}
+	}
+	return (ret);
 }
 
 void Client::manageNewEvent( void ) {

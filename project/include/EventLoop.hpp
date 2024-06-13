@@ -30,7 +30,7 @@ class EventLoop {
 		EventLoop(vector<PortListener *>& PortVector);
 		~EventLoop( void );
 
-		void					loopForEvent( void );
+		int						loopForEvent( void );
 		int						getEpollFd( void ) const;
 		void					addFdOfInterest(int fd, PortListener* owner, int eventsOfInterest);
 		void					modifyFdOfInterest(int fd, int eventsOfInterest) const;

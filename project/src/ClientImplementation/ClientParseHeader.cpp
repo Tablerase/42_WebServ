@@ -37,9 +37,24 @@ void	Client::_parseHeader( void ) {
 		field_content.erase(field_content.find_last_not_of(" ") + 1, field_content.npos);
 		if (fieldContentHasForbiddenChar(field_content) == true) {
 			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			return ;
 		}
 		normalizeStr(field_content);
-		_headerFields.insert(pair<string, string>(field_value, field_content));
+		_checkHeaderValidity({field_value, field_content});
+		if (_responseIsReady == true) {
+			break;
+		}
+	}
+}
+
+void	Client::_checkHeaderValidity( pair<string, string> newHeader) {
+	map<string, string>::iterator it = _headerFields.find(newHeader.first);
+	if (it == _headerFields.end()) {
+		_headerFields.insert(newHeader);
+	} else if (newHeader.first == "cookie") {
+		it->second += ";" + newHeader.second;
+	} else {
+		_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
 	}
 }
 

@@ -137,4 +137,13 @@ void	Client::_sendAnswer( void ) {
 	_bodyIsPresent = false;
 	_requestIsChunked = false;
 	_contentLength = 0;
+	_cgiIsRunning = false;
+	if (_cgiInfilePath != "") {
+		remove(_cgiInfilePath.c_str());
+		_cgiInfilePath = "";
+	}
+	if (_cgiOutFilePath != "") {
+		remove(_cgiOutFilePath.c_str());
+		_cgiOutFilePath = "";
+	}
 }

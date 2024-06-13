@@ -56,15 +56,9 @@ void	Client::_manageGetRequest( void ) {
 	// } 
 }
 
-void	Client::_processClassicGetRequest( string& extension ) {
-	_generateContentExtension(extension);	
-	if (_checkExtensionMatch(extension) == false) {
-		string allowedContent = "Content-Type: " + extension;
-		_buildNoBodyResponse("406", " Not Acceptable", allowedContent, false);
-		return ;
-	} 
+void Client::_statReadOnlyFile(const char* path) {
 	struct stat buffer;
-	if(stat(_requestLine.filePath.c_str(), &buffer) != 0) {
+	if(stat(path, &buffer) != 0) {
 		if (errno == EACCES) {
 			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
 			return ;
@@ -80,20 +74,34 @@ void	Client::_processClassicGetRequest( string& extension ) {
 		}
 	}
 	if (!(S_IRUSR & buffer.st_mode)) {
-			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
+		_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
 		return ;
 	}
 	if (S_ISREG(buffer.st_mode) != true) {
 			_buildNoBodyResponse("409", " Conflict", "Conflict between the current state of the ressource and the asked one", false);
+			return;
 	}
 	stringstream size;
 	size << buffer.st_size;
+	_responseHeader.insert(pair<string, string>("Content-length: ", size.str()));
+}
+
+void	Client::_processClassicGetRequest( string& extension ) {
+	_generateContentExtension(extension);	
+	if (_checkExtensionMatch(extension) == false) {
+		string allowedContent = "Content-Type: " + extension;
+		_buildNoBodyResponse("406", " Not Acceptable", allowedContent, false);
+		return ;
+	} 
+	_statReadOnlyFile(_requestLine.filePath.c_str());
+	if (_responseIsReady == true) {
+		return ;
+	}
 	ifstream toSend;
 	toSend.open(_requestLine.filePath);
 	if (toSend.fail()) {
 		_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
 	}
-	_responseHeader.insert(pair<string, string>("Content-length: ", size.str()));
 	_bodyStream << toSend.rdbuf();
 	toSend.close();
 	_fillResponse("200 OK", false);

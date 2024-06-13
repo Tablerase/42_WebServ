@@ -179,6 +179,8 @@ void	PortListener::manageEvent(int fd) {
 	} else {
 		try {
 			it->second->manageNewEvent();
+		} catch ( Client::ChildIsExiting& e) {
+			throw Client::ChildIsExiting();
 		} catch (exception& e) {
 			cerr << e.what() << endl;
 			_closeConnection(fd);
@@ -195,12 +197,9 @@ Server*	PortListener::getServer(const string& name) const {
 }
 
 void PortListener::getTimeout(void) {
-	time_t current;
-
-	time(&current);
 	for (map<int, Client*>::iterator it = _clientMap.begin();
 			it != _clientMap.end(); ++it) {
-		if (current - it->second->getLastInteractionTime() >= TIMEOUT) {	
+		if (it->second->isCLientTimeout() == true) {	
 			_closeConnection(it->first);
 		}
 	}

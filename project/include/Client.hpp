@@ -46,13 +46,18 @@ class Client {
 		Client(int fd, PortListener& owner, EventLoop& eventLoop);
 		~Client( void );
 
-		void		manageNewEvent( void );
-		time_t	getLastInteractionTime( void ) const;
+		void	manageNewEvent( void );
+		bool	isCLientTimeout( void );
 
 		class CloseMeException : public exception {
 			public :
 				const char* what() const throw() {
 					return ("Client manager signaled that connection should be closed");}
+		};
+		class ChildIsExiting : public exception {
+			public :
+				const char* what() const throw() {
+					return ("Children Wants To CleanExit !");}
 		};
 
 	private :
@@ -60,14 +65,10 @@ class Client {
 		void	_readRequest( void );
 		void	_sendAnswer( void );
 		void	_parseRequest( void );
-		void	_parseHeader( void );
 		void	_parseRequestLine( const string& requestLine );
 		void	_parseMethod( const string& method);
 		void 	_parseUri( const string& uri);
 		void	_parseProtocol( const string& protocol);
-		void	_checkContentLength(void);
-		void	_checkForChunkedRequest( void );
-		void	_parseChunkedRequest( string RequestPart );
 		void	_manageDeleteRequest( void );
 		void	_manageGetRequest( void );
 		void	_managePostRequest( void );
@@ -79,6 +80,25 @@ class Client {
 		bool	_loadCustomStatusPage(string path);
 		void	_fillResponse( string status, bool shouldClose );
 		void	_generateContentExtension(string& path);
+		void	_statReadOnlyFile(const char* path);
+		
+		// ClientParseHeader.cpp
+		void	_parseHeader( void );
+		void	_checkContentLength(void);
+		void	_checkForChunkedRequest( void );
+		void	_parseChunkedRequest( string RequestPart );
+		void	_checkHeaderValidity( pair<string, string> newHeader);
+
+		//ClientCgi.cpp
+
+		void	_cgiInit( void );
+		void	_manageBodyForCgi( void );
+		void	_manageCgiOutfile( void );
+		void	_killCgi( void );
+		void	_checkCgiStatus( void );
+		void	_readOutfile( void );
+		void	_childrenRoutine( void );
+		void	_buildEnv( void );
 
 		// Variables for interaction with outside of the objects.
 		Server*				_configServer;
@@ -101,6 +121,19 @@ class Client {
 		bool								_bodyIsFullyRed;
 		bool								_requestIsChunked;
 		int									_contentLength;
+
+		// Cgi
+		string					_cgiInfilePath;
+		string					_cgiOutFilePath;
+		string					_cgiScriptName;
+		string					_cgiScriptPath;
+		pid_t						_cgiScriptPid;
+		bool						_cgiIsRunning;
+		string					_infileSize;
+		vector<string>	_env;
+		vector<char*> 	_cEnv;
+		vector<string>	_arg;
+		vector<char*> 	_cArg;
 
 		// COncerning response status
 		stringstream				_response;

@@ -23,5 +23,6 @@ int			normalizeStr(string &s);
 bool 		fieldValueHasForbiddenChar(const string& s);
 bool		fieldContentHasForbiddenChar(const string& s);
 string	getDate( void );
+void		vectorToCStringTab(const vector<string>& str, vector<char *>& cstr);
 
 #endif
