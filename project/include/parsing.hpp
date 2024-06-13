@@ -91,6 +91,7 @@ bool is_close_bracket(string & line);
 bool is_valid_limit_except_componant(string & current_method, access_seen & as);
 bool is_allowed_cgi_extension(string & extension);
 bool is_valid_http_error_code(int error_code);
+bool is_empty_server(already_seen_server & as);
 
 // ===================== PARSING_ALREADYSEEN.CPP =====================
 

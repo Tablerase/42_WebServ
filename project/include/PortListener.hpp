@@ -41,10 +41,13 @@ class PortListener {
 		// void	initSocket( void ); // Could be moved in the constructor but it depends
 		// // how you'll implement it.
 		// void	manageEvent( int fd);
+
+		// Added for parsing
         void                    addServerToMap(Server & new_server);
 		void					printServerMap() const;
 		void					setDefaultServer(const string & default_server);
 		const string &          getDefaultServer() const;
+		// end for parsing
 
 	private :
 		// void					_acceptConnection( void );

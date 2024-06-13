@@ -29,7 +29,7 @@ void initErrorPageServer(Server & server, already_seen_server & as, const vector
     throw runtime_error("multiple definition of the same error_page in server block.");
   }
   catch (out_of_range & oer) {}
-  as.error_pages_.insert(make_pair(error_code ,arguments.back()));
+  as.error_pages_.insert(make_pair(error_code, true));
   server.AddError_page(error_code, arguments.back());
   return ;
 }

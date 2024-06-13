@@ -44,6 +44,8 @@ Server parse_virtual_server(ifstream & config_file) {
   }
   if (config_file.eof() == true && is_close_bracket(line) == false)
     throw runtime_error("unclosed bracket.");
+  if (is_empty_server(as) == true && location_path == "")
+    throw runtime_error("empty server.");
   return virtual_server;
 }
 

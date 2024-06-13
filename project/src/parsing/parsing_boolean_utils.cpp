@@ -57,3 +57,14 @@ bool is_valid_http_error_code(int error_code) {
     return true;
   return false;
 }
+
+bool is_empty_server(already_seen_server & as) {
+  for (map<int,bool>::const_iterator it = as.error_pages_.begin(); it != as.error_pages_.end(); ++it) {
+    if (it->second == true)
+      return false;
+  }
+  if (as.max_client_body_size_ == false
+    && as.name_ == false && as.port_ == false)
+    return true;
+  return false;
+}

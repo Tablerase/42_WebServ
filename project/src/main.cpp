@@ -33,6 +33,8 @@ int main(int argc, char** argv){
 
   // Parsing
   vector<PortListener> listeners = ParseConfig(argv[1]);
+  if (listeners.empty() == true)
+    return EXIT_FAILURE;
   for (vector<PortListener>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
     cout << *it;
   }
@@ -49,8 +51,9 @@ int main(int argc, char** argv){
 /*
 [ TO CHECK ] set default values
 test everything
+setup a default location block in virtual server if not set ?
 check for missing fields that are mandatory (location is ?)
-empty server valid ?
+[ OK ] empty server not valid
 [ OK ] patch unclosed brackets
 [ OK ] patch empty line
 [ OK ] cgi field

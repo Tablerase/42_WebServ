@@ -48,7 +48,7 @@ struct already_seen_server {
   bool        name_;
   bool        port_;
   bool        max_client_body_size_;
-  map<int,string> error_pages_;
+  map<int,bool> error_pages_;
 };
 
 struct location {
