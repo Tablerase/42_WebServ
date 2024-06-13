@@ -20,7 +20,7 @@ void	Client::_parseHeader( void ) {
 		_header.erase(0, _header.find("\r\n") + 2);
 		substituteSpaces(header_line);
 		if (header_line.find(":") == header_line.npos) {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 			return ;
 		}
 		field_value = header_line.substr(0, header_line.find_first_of(":"));
@@ -30,13 +30,13 @@ void	Client::_parseHeader( void ) {
 		}
 		transform(field_value.begin(), field_value.end(), field_value.begin(), ::tolower);
 		if (fieldValueHasForbiddenChar(field_value) == true) {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 			return ;
 		}
 		field_content.erase(0, field_content.find_first_not_of(" "));
 		field_content.erase(field_content.find_last_not_of(" ") + 1, field_content.npos);
 		if (fieldContentHasForbiddenChar(field_content) == true) {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 			return ;
 		}
 		normalizeStr(field_content);
@@ -54,7 +54,7 @@ void	Client::_checkHeaderValidity( pair<string, string> newHeader) {
 	} else if (newHeader.first == "cookie") {
 		it->second += ";" + newHeader.second;
 	} else {
-		_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 	}
 }
 
@@ -65,7 +65,7 @@ void	Client::_checkForChunkedRequest( void ) {
 		return ;
 	}
 	if (it->second != "chunked") {
-		_buildNoBodyResponse("415", " Unsupported Media Type", "Only chunked encoding is allowed", true);
+			_noBodyResponseDriver(415, "", true);
 	} else {
 		_requestIsChunked = true;
 	} return ;
@@ -77,15 +77,15 @@ void	Client::_checkContentLength( void ) {
 		_contentLength = 0;
 		return ;
 	} else if (_requestIsChunked == true) {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 	}
 	else if (it->second.size() > 11) {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 	}
 	char *endptr;
 	_contentLength = strtol(it->second.c_str(), &endptr, 10);
 	if (*endptr != '\0' || _contentLength < 0) {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 	}// else if (_contentLength >= _configServer->getMaxBodySize) {
 	// 		_buildNoBodyResponse("413", " Content Too Large", "Message Body is too large for the server configuration", true);
 	// }
@@ -98,7 +98,7 @@ void Client::_parseChunkedRequest(string requestPart) {
 	while (requestPart.size() != 0) {
 		chunk_size = requestPart.substr(0, requestPart.find("\r\n"));
 		if (requestPart.size() > 8) {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 			break ;
 		}
 		requestPart.erase(0, chunk_size.size() + 2);
@@ -108,18 +108,18 @@ void Client::_parseChunkedRequest(string requestPart) {
 		// 	break ;
 	//	}
 		if (*endptr != '\0') {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 			break ;
 		} else if (num_size == 0) {
 			if (requestPart.find("\r\n\r\n") != 0) {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 			} else {
 				_bodyIsFullyRed = true;
 				break ;
 			}
 		}
 		if (requestPart.find("\r\n") != num_size) {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 		}
 		_body += requestPart.substr(0, num_size);
 		requestPart.erase(0, num_size + 2);

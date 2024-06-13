@@ -42,6 +42,54 @@ bool	Client::_checkExtensionMatch(const string& extension) {
 	}
 }
 
+void Client::_noBodyResponseDriver(const int status, const string& optionalBody, bool isFatal) {
+	switch (status) {
+		case 201 :
+			_buildNoBodyResponse("201", " Created", "Data Successefully Uploaded", isFatal);
+			break ;
+		case 204 :
+			_buildNoBodyResponse("204", " No content", "No content to display", isFatal);
+			break ;
+		case 400 :
+			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", isFatal);
+			break ;
+		case 403 :
+			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", isFatal);
+			break ;
+		case 404 :
+			_buildNoBodyResponse("404", " Not Found", "Oops ! It seems there's nothing available here ...", isFatal);
+			break ;
+		case 406 :
+			_buildNoBodyResponse("406", " Not Acceptable", optionalBody, isFatal);
+			break ;
+		case 409 :
+			_buildNoBodyResponse("409", " Conflict", "Conflict between the current state of the ressource and the asked one", isFatal);
+			break ;
+		case 413 :
+			_buildNoBodyResponse("413", " Uri Too Loong", "Uri exceed max size", isFatal);
+			break;
+		case 415 :
+			_buildNoBodyResponse("415", " Unsupported Media Type", "Only chunked encoding is allowed", isFatal);
+			break ;
+		case 426 :
+			_buildNoBodyResponse("426", " Upgrade Required", "This service require use of HTTP/1.1 protocol", isFatal);	
+		case 500 :
+			_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong\
+on our side ... Maybe try refresh the page ?", isFatal);
+			break ;
+		case 501 :
+			_buildNoBodyResponse("501", " Not Implemented", "Requested method isn't implemented", isFatal);
+		case 504 :
+			_buildNoBodyResponse("504", "Gateway Timeout", "Timeout occurs while executing CGI", isFatal);
+			break ;
+		case 505 :
+			_buildNoBodyResponse("505", " HTTP Protocol not supported", "Server protocol is HTTP/1.1", isFatal);
+			break ;
+		default :
+			break;
+	}
+}
+
 void Client::_buildNoBodyResponse(string status, string info, string body, bool isFatal) {
 	// string	customPage = _configServer->getCustomStatusPage(status);
 	bool		customPageIsPresent = false;

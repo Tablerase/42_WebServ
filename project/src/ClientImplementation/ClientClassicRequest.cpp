@@ -60,25 +60,25 @@ void Client::_statReadOnlyFile(const char* path) {
 	struct stat buffer;
 	if(stat(path, &buffer) != 0) {
 		if (errno == EACCES) {
-			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
+			_noBodyResponseDriver(403, "", false);
 			return ;
 		} else if (errno == ENOENT) {
-			_buildNoBodyResponse("404", " Not Found", "Oops ! It seems there's nothing available here ...", false);
+			_noBodyResponseDriver(404, "", false);
 			return ;
 		} else if (errno == ENOMEM) {
-			_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+			_noBodyResponseDriver(500, "", false);
 			return ;
 		} else {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 			return ;
 		}
 	}
 	if (!(S_IRUSR & buffer.st_mode)) {
-		_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
+			_noBodyResponseDriver(403, "", false);
 		return ;
 	}
 	if (S_ISREG(buffer.st_mode) != true) {
-			_buildNoBodyResponse("409", " Conflict", "Conflict between the current state of the ressource and the asked one", false);
+			_noBodyResponseDriver(403, "", true);
 			return;
 	}
 	stringstream size;
@@ -90,7 +90,7 @@ void	Client::_processClassicGetRequest( string& extension ) {
 	_generateContentExtension(extension);	
 	if (_checkExtensionMatch(extension) == false) {
 		string allowedContent = "Content-Type: " + extension;
-		_buildNoBodyResponse("406", " Not Acceptable", allowedContent, false);
+			_noBodyResponseDriver(403, allowedContent, true);
 		return ;
 	} 
 	_statReadOnlyFile(_requestLine.filePath.c_str());
@@ -100,7 +100,7 @@ void	Client::_processClassicGetRequest( string& extension ) {
 	ifstream toSend;
 	toSend.open(_requestLine.filePath);
 	if (toSend.fail()) {
-		_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+			_noBodyResponseDriver(500, "", false);
 	}
 	_bodyStream << toSend.rdbuf();
 	toSend.close();
@@ -111,11 +111,11 @@ void Client::_listDirectory( void ) {
 	DIR*	directoryPtr = opendir(_requestLine.filePath.c_str());
 	if (directoryPtr == NULL) {
 		if (errno == ENOENT) {
-			_buildNoBodyResponse("404", " Not Found", "Oops ! It seems there's nothing available here ...", false);
+			_noBodyResponseDriver(404, "", false);
 		} else if (errno == EACCES) {
-			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
+			_noBodyResponseDriver(403, "", false);
 		} else {
-			_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+			_noBodyResponseDriver(500, "", false);
 		}
 	}	
 	_requestLine.uri.erase(_requestLine.uri.find_first_of("?"), _requestLine.uri.npos);
@@ -150,26 +150,26 @@ void Client::_processClassicPostRequest( void ) {
 	struct stat buffer;	
 	if (stat(_requestLine.uri.c_str(), &buffer) != 0) {
 		if (errno == EACCES) {
-			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
+			_noBodyResponseDriver(403, "", false);
 		} else if (errno == ENOENT) {
-			_buildNoBodyResponse("404", " Not Found", "Oops ! It seems there's nothing available here ...", false);
+			_noBodyResponseDriver(404, "", false);
 		} else if (errno == ENOMEM) {
-			_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+			_noBodyResponseDriver(500, "", false);
 		} else {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 		}
 	}
 	if (!(S_IWUSR & buffer.st_mode)) {
-			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
+			_noBodyResponseDriver(403, "", false);
 	}
 	ofstream out;	
 	out.open(_requestLine.filePath);
 	if (out.fail()) {
-		_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+			_noBodyResponseDriver(500, "", false);
 	} else {
 		out << _body;
 		out.close();
-		_buildNoBodyResponse("201", " Created", "Data Successefully Uploaded", false);
+			_noBodyResponseDriver(201, "", false);
 	}
 }
 
@@ -177,21 +177,21 @@ void	Client::_manageDeleteRequest( void ) {
 	struct stat buffer;	
 	if (stat(_requestLine.uri.c_str(), &buffer) != 0) {
 		if (errno == EACCES) {
-			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
+			_noBodyResponseDriver(403, "", false);
 		} else if (errno == ENOENT) {
-			_buildNoBodyResponse("404", " Not Found", "Oops ! It seems there's nothing available here ...", false);
+			_noBodyResponseDriver(404, "", false);
 		} else if (errno == ENOMEM) {
-			_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+			_noBodyResponseDriver(500, "", false);
 		} else {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 		}
 	}
 	if (!(S_IWUSR & buffer.st_mode)) {
-			_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
+			_noBodyResponseDriver(403, "", false);
 	}
 	if (remove(_requestLine.filePath.c_str()) != 0) {
-		_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+			_noBodyResponseDriver(500, "", false);
 	} else {
-		_buildNoBodyResponse("204", " No content", "No content to display", false);
+			_noBodyResponseDriver(204, "", false);
 	}
 }

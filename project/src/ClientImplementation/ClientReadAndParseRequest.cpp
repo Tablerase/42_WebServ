@@ -40,16 +40,16 @@ void	Client::_readRequest( void ) {
 	}
 	if (thisReadAsBeenHandled == false && _responseIsReady == false) {
 		if (_bodyIsPresent == false) {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+			_noBodyResponseDriver(400, "", true);
 		} else if (_requestIsChunked == true) {
 			_parseChunkedRequest(request.substr(bodyStart, request.npos));
 		} else {
 			_body += request.substr(bodyStart, request.npos);
 			if (_body.size() > _contentLength + 2) {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+				_noBodyResponseDriver(400, "", true);
 			} else if (_body.size() == _contentLength + 2) {
 				if (_body.find_last_of("\r") != _contentLength && _body.find_last_of("\n") != _contentLength + 1) {
-					_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+					_noBodyResponseDriver(400, "", true);
 				} else {
 					_bodyIsFullyRed = true;
 				}
@@ -76,7 +76,7 @@ void	Client::_parseRequest( void ) {
 	substituteSpaces(requestLine); substituteSpaces(host);
 	transform(host.begin(), host.end(), host.begin(), ::tolower);
 	if (_header.compare(0, 6, "host: ") != 0) {
-		_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+		_noBodyResponseDriver(400, "", true);
 		return ;
 	}
 	_configServer = _owner.getServer(host.substr(host.find_first_of(" "), host.find_last_of(":")));	
@@ -123,20 +123,20 @@ void Client::_parseMethod(const string& method) {
 	if (i < 2) {
 		_requestLine.method = knownMethods[i];
 	} else if (i != 8) {
-			_buildNoBodyResponse("501", " Not Implemeted", "Requested method isn't implemented", false);
+		_noBodyResponseDriver(501, "", true);
 	} else {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+		_noBodyResponseDriver(400, "", true);
 	}
 	return ;
 }
 
 void Client::_parseUri(const string& uri) {
 	if (uri.size() > MAX_URI_SIZE) {
-		_buildNoBodyResponse("413", " Uri Too Loong", "Uri exceed max size", true);
+		_noBodyResponseDriver(413, "", true);
 	}
 	_requestLine.cgiQuery = uri.substr(uri.find_first_of("?", uri.npos));
 	if (normalizeStr(_requestLine.filePath) < 0) {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+		_noBodyResponseDriver(400, "", true);
 	}
 	//_configServer->getFullPath(_requestLine.filePath);
 	// if (_configServer.methodIsAllowed(_requestLine.filePath, _requestLine.method) == false) {
@@ -146,22 +146,22 @@ void Client::_parseUri(const string& uri) {
 
 void Client::_parseProtocol(const string& protocol) {
 	if (protocol.size() != 8) {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+		_noBodyResponseDriver(400, "", true);
 	}
 	if (protocol.compare(0, 5, "HTTP/") != 0) {
-			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+		_noBodyResponseDriver(400, "", true);
 	}
 	char *endptr;
 	double	version;
 	version = strtod(protocol.c_str() + 5, &endptr);
 	if (version >= 2.0) {
-		_buildNoBodyResponse("505", " HTTP Protocol not supported", "Server protocol is HTTP/1.1", true);
+		_noBodyResponseDriver(505, "", true);
 	} else if (version < 1.) {
 		_responseHeader.insert(pair<string, string>("Connection: ", "upgrade"));
 		_responseHeader.insert(pair<string, string>("Upgrade: ", "HTTP/1.1"));
-		_buildNoBodyResponse("426", " Upgrade Required", "This service require use of HTTP/1.1 protocol", true);	
+		_noBodyResponseDriver(426, "", true);
 	} else if (*endptr != '\0') {
-		_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", true);
+		_noBodyResponseDriver(400, "", true);
 	} else {
 		_requestLine.protocol = version;
 	} return ;

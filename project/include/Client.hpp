@@ -77,6 +77,7 @@ class Client {
 		bool	_checkExtensionMatch(const string& extension);
 		void	_listDirectory( void );
 		void	_buildNoBodyResponse(string status, string info, string body, bool isFatal);
+		void	_noBodyResponseDriver( const int status, const string& optionnalBody, const bool isFatal);
 		bool	_loadCustomStatusPage(string path);
 		void	_fillResponse( string status, bool shouldClose );
 		void	_generateContentExtension(string& path);
