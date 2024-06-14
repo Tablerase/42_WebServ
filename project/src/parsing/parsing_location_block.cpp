@@ -67,7 +67,7 @@ string check_for_location_field(string & line, ifstream & config_file) {
     }
     word = line.substr(start, end - start);
     size_t pos = line.find("{", end);
-    if (pos == string::npos || line.find_last_not_of(" \t\n\v\f\r") != pos)
+    if (pos == string::npos || line.find_last_not_of(" \t\n\v\f\r") != pos || line.find_first_not_of(" \t\n\v\f\r", end) != pos)
       throw runtime_error("'location' field not correctly formated.");
     return word;
   }
