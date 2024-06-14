@@ -27,6 +27,7 @@ Client::Client(int fd, PortListener& owner, EventLoop& eventLoop): _connectionEn
 	_bodyIsPresent = false;
 	_requestIsChunked = false;
 	_contentLength = 0;
+	_requestIsHandledByCgi = false;
 	return ;
 }
 

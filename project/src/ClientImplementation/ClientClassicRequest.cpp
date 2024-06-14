@@ -56,7 +56,7 @@ void	Client::_manageGetRequest( void ) {
 	// } 
 }
 
-void Client::_statReadOnlyFile(const char* path) {
+void Client::_statFile(const char* path) {
 	struct stat buffer;
 	if(stat(path, &buffer) != 0) {
 		if (errno == EACCES) {
@@ -73,17 +73,23 @@ void Client::_statReadOnlyFile(const char* path) {
 			return ;
 		}
 	}
-	if (!(S_IRUSR & buffer.st_mode)) {
+	if (_requestLine.method == "GET" || _requestIsHandledByCgi == true) {
+		if (!(S_IRUSR & buffer.st_mode)) {
 			_noBodyResponseDriver(403, "", false);
-		return ;
-	}
-	if (S_ISREG(buffer.st_mode) != true) {
+			return ;
+		}
+		if (S_ISREG(buffer.st_mode) != true) {
 			_noBodyResponseDriver(403, "", true);
 			return;
+		}
+		stringstream size;
+		size << buffer.st_size;
+		_responseHeader.insert(pair<string, string>("Content-length: ", size.str()));
+	} else {
+		if (!(S_IWUSR & buffer.st_mode)) {
+			_noBodyResponseDriver(403, "", false);
+		}
 	}
-	stringstream size;
-	size << buffer.st_size;
-	_responseHeader.insert(pair<string, string>("Content-length: ", size.str()));
 }
 
 void	Client::_processClassicGetRequest( string& extension ) {
@@ -93,7 +99,7 @@ void	Client::_processClassicGetRequest( string& extension ) {
 			_noBodyResponseDriver(403, allowedContent, true);
 		return ;
 	} 
-	_statReadOnlyFile(_requestLine.filePath.c_str());
+	_statFile(_requestLine.filePath.c_str());
 	if (_responseIsReady == true) {
 		return ;
 	}
@@ -147,20 +153,9 @@ void Client::_listDirectory( void ) {
 }
 
 void Client::_processClassicPostRequest( void ) {
-	struct stat buffer;	
-	if (stat(_requestLine.uri.c_str(), &buffer) != 0) {
-		if (errno == EACCES) {
-			_noBodyResponseDriver(403, "", false);
-		} else if (errno == ENOENT) {
-			_noBodyResponseDriver(404, "", false);
-		} else if (errno == ENOMEM) {
-			_noBodyResponseDriver(500, "", false);
-		} else {
-			_noBodyResponseDriver(400, "", true);
-		}
-	}
-	if (!(S_IWUSR & buffer.st_mode)) {
-			_noBodyResponseDriver(403, "", false);
+	_statFile(_requestLine.filePath.c_str());
+	if (_responseIsReady == true) {
+		return ;
 	}
 	ofstream out;	
 	out.open(_requestLine.filePath);
@@ -174,20 +169,9 @@ void Client::_processClassicPostRequest( void ) {
 }
 
 void	Client::_manageDeleteRequest( void ) {
-	struct stat buffer;	
-	if (stat(_requestLine.uri.c_str(), &buffer) != 0) {
-		if (errno == EACCES) {
-			_noBodyResponseDriver(403, "", false);
-		} else if (errno == ENOENT) {
-			_noBodyResponseDriver(404, "", false);
-		} else if (errno == ENOMEM) {
-			_noBodyResponseDriver(500, "", false);
-		} else {
-			_noBodyResponseDriver(400, "", true);
-		}
-	}
-	if (!(S_IWUSR & buffer.st_mode)) {
-			_noBodyResponseDriver(403, "", false);
+	_statFile(_requestLine.filePath.c_str());
+	if (_responseIsReady == true) {
+		return ;
 	}
 	if (remove(_requestLine.filePath.c_str()) != 0) {
 			_noBodyResponseDriver(500, "", false);

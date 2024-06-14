@@ -186,6 +186,7 @@ void	Client::_sendAnswer( void ) {
 	_requestIsChunked = false;
 	_contentLength = 0;
 	_cgiIsRunning = false;
+	_requestIsHandledByCgi = false;
 	if (_cgiInfilePath != "") {
 		remove(_cgiInfilePath.c_str());
 		_cgiInfilePath = "";

@@ -81,7 +81,7 @@ class Client {
 		bool	_loadCustomStatusPage(string path);
 		void	_fillResponse( string status, bool shouldClose );
 		void	_generateContentExtension(string& path);
-		void	_statReadOnlyFile(const char* path);
+		void	_statFile(const char* path);
 		
 		// ClientParseHeader.cpp
 		void	_parseHeader( void );
@@ -130,6 +130,7 @@ class Client {
 		string					_cgiScriptPath;
 		pid_t						_cgiScriptPid;
 		bool						_cgiIsRunning;
+		bool						_requestIsHandledByCgi;
 		string					_infileSize;
 		vector<string>	_env;
 		vector<char*> 	_cEnv;
