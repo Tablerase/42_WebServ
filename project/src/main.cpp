@@ -6,12 +6,14 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/11 16:37:44 by rcutte            #+#    #+#             */
-/*   Updated: 2024/06/12 11:45:11 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/14 19:25:45 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 #include "parsing.hpp"
+
+#include "test.hpp"
 
 bool  CheckInput(int argc, char** argv){
   try {
@@ -40,12 +42,7 @@ int main(int argc, char** argv){
   }
 
   // Event loop
-
-  // Server server;
-  // std::cout
-  //   << server
-  //   << server.get_location("/")
-  //   << std::endl;
+  // TestServer();
 }
 
 /*

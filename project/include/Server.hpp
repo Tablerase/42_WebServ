@@ -6,7 +6,7 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/11 12:12:31 by rcutte            #+#    #+#             */
-/*   Updated: 2024/06/12 11:41:01 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/14 19:18:31 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,11 +99,25 @@ public:
 
   std::string const &get_name() const;
   int const         &get_port() const;
+  int const         &get_max_client_body_size() const;
+  
   std::map<std::string, location> const &get_locations() const;
   location const    &get_location(std::string const &path) const;
   map<int,string> const &get_error_pages() const;
-  int const         &get_max_client_body_size() const;
-  
+  string const      get_error_page(int const &error_code) const;
+
+  bool              is_redirect(std::string const &path) const;
+  string const      get_redirect_path(std::string const &path) const;
+
+  string const      get_root(std::string const &path) const;
+  string const      get_index(std::string const &path) const;
+  bool              is_autoindex(std::string const &path) const;
+  string const      get_upload_path(std::string const &path) const;
+  bool              is_allowed_method(std::string const &path, std::string const &method) const;
+  vector<string>    get_limit_except(std::string const &path) const;
+  bool              is_cgi_extension(std::string const &path, std::string const &extension) const;
+  string const      get_cgi_path(std::string const &path, std::string const &extension) const;
+
 
   // Setters
 
@@ -113,13 +127,27 @@ public:
 
   // Functions
 
+  location SearchLocation(std::string const &path) const;
   void AddLocation(std::string const &path, location const &loc);
   void AddError_page(int const &error_code, std::string const &error_page);
-  void AddCgi(std::string const &extension, std::string const &path_to_bin);
 };
 
-std::ostream &operator<<(std::ostream &os, const Server &obj);
+std::ostream& operator<<(std::ostream& os, const Server& obj);
 
-std::ostream &operator<<(std::ostream &os, const location &obj);
+std::ostream& operator<<(std::ostream& os, const location& obj);
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
+  os << "[";
+  for (typename std::vector<T>::const_iterator it = vec.begin(); it != vec.end(); ++it) {
+    if (it != vec.begin()) os << ", ";
+    os << *it;
+  }
+  os << "]";
+  return os;
+}
+
+template <typename K, typename V>
+std::ostream& operator<<(std::ostream& os, const std::map<K, V>& map);
 
 #endif
