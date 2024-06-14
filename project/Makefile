@@ -6,7 +6,7 @@
 #    By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/08 18:08:42 by rcutte            #+#    #+#              #
-#    Updated: 2024/06/14 16:31:50 by rcutte           ###   ########.fr        #
+#    Updated: 2024/06/14 20:09:06 by rcutte           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -47,14 +47,18 @@ SRC_PATH = ./src
 SRC = main.cpp \
 		$(PARSING) \
 		$(SERVER) \
-		$(TEST) \
+		$(CLIENT) \
+		$(EVENT) \
 		$(UTILS) \
+		$(TEST) \
 		PortListener.cpp \
-		# $(SOCKET) \
-		# $(EVENT) \
 
-# SOCKET = PortListener.cpp \
-# 			Client.cpp \
+CLIENT = client/ClientBuildResponse.cpp \
+			client/ClientCgi.cpp \
+			client/ClientClassicRequest.cpp \
+			client/ClientInitAndPublicFunc.cpp \
+			client/ClientParseHeader.cpp \
+			client/ClientReadAndParseRequest.cpp \
 
 PARSING = parsing/parsing.cpp \
 			parsing/parsing_alreadyseen.cpp \
@@ -68,10 +72,10 @@ PARSING = parsing/parsing.cpp \
 SERVER = server/Server.cpp \
 			server/Location.cpp \
 
-# EVENT = EventLoop.cpp \
+EVENT = EventLoop.cpp \
 
-UTILS = /utils/custom_output.cpp \
-		# utils.cpp \
+UTILS = utils/custom_output.cpp \
+			utils/utils.cpp \
 
 TEST = test/test_server.cpp \
 

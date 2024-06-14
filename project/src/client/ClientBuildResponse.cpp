@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientBuildResponse.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: purmerinos <purmerinos@protonmail.com>     +#+  +:+       +#+        */
+/*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/12 12:57:31 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/12 12:57:32 by purmerinos       ###   ########.fr       */
+/*   Updated: 2024/06/14 19:48:20 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ bool Client::_loadCustomStatusPage(string path) {
 		return (0);
 	}
 	ifstream customPage;
-	customPage.open(path);
+	customPage.open(path.c_str());
 	if (customPage.fail()) {
 		return (0);
 	}
@@ -161,7 +161,7 @@ void	Client::_fillResponse( string status, bool shouldClose ) {
 }
 
 void	Client::_sendAnswer( void ) {
-	const int writeValue = write(_connectionEntry, _response.str().c_str(), _response.str().size());
+	const size_t writeValue = write(_connectionEntry, _response.str().c_str(), _response.str().size());
 	if (writeValue != _response.str().size() || _connectionShouldBeClosed == true) {
 		throw CloseMeException();
 	}

@@ -6,7 +6,7 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 19:36:11 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/14 19:33:07 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/14 20:14:15 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include <PortListener.hpp>
 #include "Client.hpp"
 
+bool EventLoop::_serverIsRunning;
 
 EventLoop::EventLoop( void ) {
 	return ;

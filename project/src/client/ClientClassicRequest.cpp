@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientClassicRequest.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: purmerinos <purmerinos@protonmail.com>     +#+  +:+       +#+        */
+/*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/12 12:55:10 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/12 12:55:22 by purmerinos       ###   ########.fr       */
+/*   Updated: 2024/06/14 19:50:53 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,7 @@ void	Client::_processClassicGetRequest( string& extension ) {
 		return ;
 	}
 	ifstream toSend;
-	toSend.open(_requestLine.filePath);
+	toSend.open(_requestLine.filePath.c_str());
 	if (toSend.fail()) {
 			_noBodyResponseDriver(500, "", false);
 	}
@@ -158,7 +158,7 @@ void Client::_processClassicPostRequest( void ) {
 		return ;
 	}
 	ofstream out;	
-	out.open(_requestLine.filePath);
+	out.open(_requestLine.filePath.c_str());
 	if (out.fail()) {
 			_noBodyResponseDriver(500, "", false);
 	} else {

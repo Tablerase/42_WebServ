@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: purmerinos <purmerinos@protonmail.com>     +#+  +:+       +#+        */
+/*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/06 13:50:40 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/06 13:50:40 by purmerinos       ###   ########.fr       */
+/*   Updated: 2024/06/14 20:10:41 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ string	getDate( void ) {
 	return (buffer);
 }
 
-void	vectorToCStringTab(const vector<string>& str, vector<const char *>& cstr) {
+void	vectorToCStringTab(const vector<string>& str, vector<char *>& cstr) {
 	cstr.reserve(str.size() + 1);
 	for (size_t i = 0; i < str.size(); ++i) {
 		cstr.push_back(const_cast<char *>(str[i].c_str()));

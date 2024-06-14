@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.cpp                                         :+:      :+:    :+:   */
+/*   ClientInitAndPublicFunc.cpp                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: purmerinos <purmerinos@protonmail.com>     +#+  +:+       +#+        */
+/*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 19:47:21 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/05 19:47:21 by purmerinos       ###   ########.fr       */
+/*   Updated: 2024/06/14 19:54:39 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 #include <Client.hpp>
 #include <ctime>
 
-Client::Client(int fd, PortListener& owner, EventLoop& eventLoop): _connectionEntry(fd), _owner(owner),
-	_mainEventLoop(eventLoop), _lastInteractionTime(time(NULL)){
+Client::Client(int fd, PortListener& owner, EventLoop& eventLoop): _owner(owner)
+	 ,_mainEventLoop(eventLoop), _connectionEntry(fd), _lastInteractionTime(time(NULL)){
 	memset(_buffer, 0, BUFFER_SIZE);
 	_requestLine.protocol = 0.;
 	_status = IDLE;
@@ -44,7 +44,7 @@ bool	Client::isCLientTimeout( void ) {
 	const int timeSinceLastAction = time(NULL) - _lastInteractionTime;
 	bool	ret = false;
 
-	if (_lastInteractionTime >= TIMEOUT) {
+	if (timeSinceLastAction >= TIMEOUT) {
 		if (_cgiIsRunning == false) {
 			ret = true;
 		} else {

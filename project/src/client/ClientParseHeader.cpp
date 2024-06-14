@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientParseHeader.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: purmerinos <purmerinos@protonmail.com>     +#+  +:+       +#+        */
+/*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/12 13:07:16 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/12 13:07:19 by purmerinos       ###   ########.fr       */
+/*   Updated: 2024/06/14 19:55:52 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ void	Client::_parseHeader( void ) {
 			return ;
 		}
 		normalizeStr(field_content);
-		_checkHeaderValidity({field_value, field_content});
+		_checkHeaderValidity(std::pair<string, string>(field_value, field_content));
 		if (_responseIsReady == true) {
 			break;
 		}

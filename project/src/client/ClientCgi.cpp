@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientCgi.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: purmerinos <purmerinos@protonmail.com>     +#+  +:+       +#+        */
+/*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/12 20:00:37 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/12 20:00:38 by purmerinos       ###   ########.fr       */
+/*   Updated: 2024/06/14 19:49:59 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ void	Client::_cgiInit( void ) {
 	outfileName << "." << _cgiScriptName << _connectionEntry << "outfile";
 	_cgiInfilePath = _cgiScriptPath + outfileName.str();
 	if ((_cgiScriptPid = fork()) == -1) {
-		_noBodyResponseDriver(500, false);
+		_noBodyResponseDriver(500, "", false);
 	} else if (_cgiScriptPid == 0) {
 		_childrenRoutine();
 	} else {
@@ -59,7 +59,7 @@ void	Client::_childrenRoutine() {
 	_arg.push_back(_cgiScriptName);
 	vectorToCStringTab(_arg, _cArg);
 	execve(_cArg[0], &_cArg[0], &_cEnv[0]);
-		_noBodyResponseDriver(500, false);
+		_noBodyResponseDriver(500, "", false);
 }
 
 void	Client::_buildEnv() {
@@ -91,7 +91,7 @@ void	Client::_buildEnv() {
 void	Client::_manageBodyForCgi( void ) {
 	const string file = _cgiScriptPath + _cgiInfilePath;
 	ofstream infile;
-	infile.open(file);
+	infile.open(file.c_str());
 	if (infile.fail()) {
 		throw ChildIsExiting();
 	}
@@ -124,9 +124,9 @@ void	Client::_manageCgiOutfile( void ) {
 void	Client::_killCgi( void ) {
 	kill(_cgiScriptPid, 9);
 	if (waitpid(_cgiScriptPid, NULL, 0) < 0) {
-		_noBodyResponseDriver(500, false);
+		_noBodyResponseDriver(500, "", false);
 	}
-	_noBodyResponseDriver(504, false);
+	_noBodyResponseDriver(504, "", false);
 }
 
 void	Client::_checkCgiStatus( void ) {
@@ -147,12 +147,12 @@ on our side ... Maybe try refresh the page ?", false);
 }
 
 void	Client::_readOutfile( void ) {
-	_statReadOnlyFile(_requestLine.filePath.c_str());
+	_statFile(_requestLine.filePath.c_str());
 	if (_responseIsReady == true) {
 		return ;
 	}
 	ifstream toSend;
-	toSend.open(_cgiOutFilePath);
+	toSend.open(_cgiOutFilePath.c_str());
 	if (toSend.fail()) {
 		_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
 	}

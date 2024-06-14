@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: purmerinos <purmerinos@protonmail.com>     +#+  +:+       +#+        */
+/*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 16:23:15 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/04 16:23:15 by purmerinos       ###   ########.fr       */
+/*   Updated: 2024/06/14 20:10:13 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,11 +102,11 @@ class Client {
 		void	_buildEnv( void );
 
 		// Variables for interaction with outside of the objects.
-		Server*				_configServer;
-		EventLoop&		_mainEventLoop;
 		PortListener&	_owner;
+		EventLoop&		_mainEventLoop;
 		const	int			_connectionEntry;
 		time_t				_lastInteractionTime;
+		Server*				_configServer;
 
 		// Concerning request parsing
 		t_status						_status;
@@ -121,7 +121,7 @@ class Client {
 		bool								_bodyIsPresent;
 		bool								_bodyIsFullyRed;
 		bool								_requestIsChunked;
-		int									_contentLength;
+		size_t							_contentLength;
 
 		// Cgi
 		string					_cgiInfilePath;
