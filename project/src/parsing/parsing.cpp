@@ -27,6 +27,20 @@ pair<string, vector<string> > get_method_line(string & field_name, string & line
   return myField;
 }
 
+location default_location() {
+  location loc;
+  loc.autoindex_ = false;
+  (void)loc.cgi_;
+  loc.index_ = "";
+  loc.limit_except_.push_back("GET");
+  loc.path_ = "/";
+  loc.redirect_ = false;
+  loc.redirect_path_ = "";
+  loc.root_ = "";
+  loc.upload_path_ = "";
+  return loc;
+}
+
 Server parse_virtual_server(ifstream & config_file) {
   string line = "";
   string location_path;
@@ -44,8 +58,10 @@ Server parse_virtual_server(ifstream & config_file) {
   }
   if (config_file.eof() == true && is_close_bracket(line) == false)
     throw runtime_error("unclosed bracket.");
-  if (is_empty_server(as) == true && location_path == "")
+  if (is_empty_server(as) == true && virtual_server.get_locations().empty() == true)
     throw runtime_error("empty server.");
+  if (virtual_server.get_locations().empty() == true)
+    virtual_server.AddLocation("/", default_location());
   return virtual_server;
 }
 

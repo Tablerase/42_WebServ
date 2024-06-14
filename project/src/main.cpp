@@ -50,12 +50,4 @@ int main(int argc, char** argv){
 
 /*
 [ TO CHECK ] set default values
-test everything
-setup a default location block in virtual server if not set ?
-check for missing fields that are mandatory (location is ?)
-[ OK ] empty server not valid
-[ OK ] patch unclosed brackets
-[ OK ] patch empty line
-[ OK ] cgi field
-[ OK ] not allow same port on same server_name
 */
