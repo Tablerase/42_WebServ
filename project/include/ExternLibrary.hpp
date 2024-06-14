@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ExternLibrary.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: purmerinos <purmerinos@protonmail.com>     +#+  +:+       +#+        */
+/*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 19:38:46 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/03 19:38:47 by purmerinos       ###   ########.fr       */
+/*   Updated: 2024/06/14 19:32:56 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   EventLoop.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: purmerinos <purmerinos@protonmail.com>     +#+  +:+       +#+        */
+/*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 19:36:11 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/03 19:36:11 by purmerinos       ###   ########.fr       */
+/*   Updated: 2024/06/14 19:33:07 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,7 @@ PortListener*	EventLoop::_getOwner(int fd) {
 
 void EventLoop::_sigIntCatcher( int signal ) {
 	_serverIsRunning = false;
+	(void)signal;
 }
 
 int EventLoop::loopForEvent( void ) {

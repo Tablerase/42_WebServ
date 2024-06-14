@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: purmerinos <purmerinos@protonmail.com>     +#+  +:+       +#+        */
+/*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/06 14:01:34 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/06 14:01:35 by purmerinos       ###   ########.fr       */
+/*   Updated: 2024/06/14 14:26:25 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,5 +24,10 @@ bool 		fieldValueHasForbiddenChar(const string& s);
 bool		fieldContentHasForbiddenChar(const string& s);
 string	getDate( void );
 void		vectorToCStringTab(const vector<string>& str, vector<char *>& cstr);
+
+// Output functions
+
+void SeparatorLine();
+void SeparatorMsg(std::string const &msg);
 
 #endif
