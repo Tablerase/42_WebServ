@@ -16,6 +16,7 @@
 #include "EventLoop.hpp"
 #include <map>
 #include <sstream>
+#include "Server.hpp"
 #include <string>
 
 #define TIMEOUT 5

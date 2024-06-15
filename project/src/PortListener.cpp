@@ -14,8 +14,7 @@
 #include "PortListener.hpp"
 #include <EventLoop.hpp>
 #include "Client.hpp"
-#include <Server.hpp>
-#include <algorithm>
+#include "Server.hpp"
 #include <cstdio>
 #include <iostream>
 #include <stdexcept>
@@ -25,10 +24,6 @@ PortListener::PortListener( void ) {
 }
 
 PortListener::~PortListener( void ) {
-	// for(map<string, Server *>::iterator it = _serverMap.begin();
-	// 		it != _serverMap.end(); ++it) {
-	// 	delete it->second;
-	// }
 	for(map<int, Client *>::iterator it = _clientMap.begin();
 			it != _clientMap.end(); ++it) {
 		delete it->second;
@@ -106,7 +101,7 @@ void	PortListener::_acceptConnection( void ) {
 		cerr << "Failed connection to port" << _listeningPort << ":" << strerror(errno) << endl;
 	}
 	try {
-		_mainEventLoop->addFdOfInterest(clientFd, this, EPOLLIN);
+		_mainEventLoop->addFdOfInterest(clientFd, *this, EPOLLIN);
 	} catch (runtime_error& e) {
 		cerr << "Epoll_ctl_failure : " << e.what() << " closing correspondant connection" << endl;
 		close (clientFd);
@@ -141,7 +136,7 @@ void PortListener::_writeMinimalAnswer( int fd, string status,
 	response << "Connection: close\r\n\r\n";
 	response << messageBody;
 	_immediateResponse.insert(pair<int, string>(fd, response.str()));
-	_mainEventLoop->addFdOfInterest(fd, this, EPOLLOUT);
+	_mainEventLoop->addFdOfInterest(fd, *this, EPOLLOUT);
 }
 
 void	PortListener::_closeConnection(int fd) {

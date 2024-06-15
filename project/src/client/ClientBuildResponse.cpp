@@ -11,7 +11,10 @@
 /* ************************************************************************** */
 
 #include "Client.hpp"
+#include "Server.hpp"
 #include "utils.hpp"
+#include <cstddef>
+#include <cstdlib>
 
 void Client::_generateContentExtension(string& path) {
 	path.erase(0, 1);
@@ -66,7 +69,10 @@ void Client::_noBodyResponseDriver(const int status, const string& optionalBody,
 			_buildNoBodyResponse("409", " Conflict", "Conflict between the current state of the ressource and the asked one", isFatal);
 			break ;
 		case 413 :
-			_buildNoBodyResponse("413", " Uri Too Loong", "Uri exceed max size", isFatal);
+			_buildNoBodyResponse("413", " Content Too Large", "Message Body is too large for the server configuration", isFatal);
+			break ;
+		case 414 :
+			_buildNoBodyResponse("414", " Uri Too Loong", "Uri exceed max size", isFatal);
 			break;
 		case 415 :
 			_buildNoBodyResponse("415", " Unsupported Media Type", "Only chunked encoding is allowed", isFatal);
@@ -91,11 +97,11 @@ on our side ... Maybe try refresh the page ?", isFatal);
 }
 
 void Client::_buildNoBodyResponse(string status, string info, string body, bool isFatal) {
-	// string	customPage = _configServer->getCustomStatusPage(status);
+	const string	customPage = _configServer->get_error_page(strtol(status.c_str(), NULL, 10));
 	bool		customPageIsPresent = false;
-	// if (customPage != "") {
-	// 	customPageIsPresent = _loadCustomStatusPage(customPage);
-	// }
+	if (customPage != "") {
+		customPageIsPresent = _loadCustomStatusPage(customPage);
+	}
 	if (customPageIsPresent == false) {
 		_bodyStream << "<!doctype html><title>" << status << info << "</title><h1>"
 			<< info << "</h1><p>" << body << "</p>";
@@ -148,7 +154,7 @@ void	Client::_fillResponse( string status, bool shouldClose ) {
 		}
 	}
 	_response << "HTTP/1.1 " << status << "\r\n";
-	// _response << "Server: " << _configServer->getName() << "\r\n";
+	_response << "Server: " << _configServer->get_name() << "\r\n";
 	for (map<string, string>::iterator it = _responseHeader.begin(); it != _responseHeader.end(); ++it) {
 		_response << it->first << it->second << "\r\n";
 	} _response << "\r\n";
@@ -168,7 +174,6 @@ void	Client::_sendAnswer( void ) {
 	_requestLine.cgiQuery.clear();
 	_requestLine.filePath.clear();
 	_requestLine.method.clear();
-	_requestLine.uri.clear();
 	_header.clear();
 	_body.clear();
 	_headerFields.clear();
@@ -187,6 +192,8 @@ void	Client::_sendAnswer( void ) {
 	_contentLength = 0;
 	_cgiIsRunning = false;
 	_requestIsHandledByCgi = false;
+	_cgiBinPath = "";
+	_locationBlockForTheRequest = NULL;
 	if (_cgiInfilePath != "") {
 		remove(_cgiInfilePath.c_str());
 		_cgiInfilePath = "";

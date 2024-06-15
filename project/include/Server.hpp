@@ -83,7 +83,7 @@ private:
 
   /* Additional values */
 
-  int                                 max_client_body_size_;
+  size_t                              max_client_body_size_;
     // map(error_code, error_page_absolute_path)
   std::map<int, std::string>          error_pages_;
 
@@ -99,7 +99,7 @@ public:
 
   std::string const &get_name() const;
   int const         &get_port() const;
-  int const         &get_max_client_body_size() const;
+  size_t const      &get_max_client_body_size() const;
   
   std::map<std::string, location> const &get_locations() const;
   location const    *get_location(std::string const &path) const;

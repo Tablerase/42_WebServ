@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Client.hpp"
+#include "Server.hpp"
 #include "utils.hpp"
 #include <csignal>
 #include <cstdlib>
@@ -55,7 +56,7 @@ void	Client::_childrenRoutine() {
 	}
 	_buildEnv();
 	vectorToCStringTab(_env, _cEnv);
-	//_arg.push_back(server.getCgiPath);
+	_arg.push_back(_cgiBinPath);
 	_arg.push_back(_cgiScriptName);
 	vectorToCStringTab(_arg, _cArg);
 	execve(_cArg[0], &_cArg[0], &_cEnv[0]);
@@ -63,7 +64,7 @@ void	Client::_childrenRoutine() {
 }
 
 void	Client::_buildEnv() {
-	_env.push_back("DOCUMENT_ROOT="); // + servergetRoot
+	_env.push_back("DOCUMENT_ROOT=" + _locationBlockForTheRequest->root_);
 	if (_headerFields.find("cookie") != _headerFields.end()) {
 		_env.push_back("HTTP_COOKIE" + _headerFields.find("cookie")->second);
 	}
@@ -75,7 +76,7 @@ void	Client::_buildEnv() {
 	}
 	_env.push_back("REQUEST_METHOD" + _requestLine.method);
 	_env.push_back("SERVER_SOFTWARE=WebServ/0.1312");
-	_env.push_back("SERVER_NAME="); // + server.getName
+	_env.push_back("SERVER_NAME=" + _configServer->get_name());
 	_env.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	_env.push_back("QUERY_STRING=" + _requestLine.cgiQuery);
 	if (_requestLine.method == "POST") {
@@ -134,8 +135,7 @@ void	Client::_checkCgiStatus( void ) {
 	if (waitpid(_cgiScriptPid, &status, WNOHANG) <= 0) {
 		return ;
 	} else if (WIFEXITED(status) != true || WEXITSTATUS(status) != 0){
-		_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong\
-on our side ... Maybe try refresh the page ?", false);
+		_noBodyResponseDriver(500, "", false);
 	} else {
 		_readOutfile();
 	}

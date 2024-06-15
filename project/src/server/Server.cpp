@@ -61,7 +61,7 @@ int const &Server::get_port() const {
  * @return int: the max client body size
  * @note The max client body size is in Mb by default it's 1Mb
 */
-int const & Server::get_max_client_body_size() const {
+size_t const & Server::get_max_client_body_size() const {
   return this->max_client_body_size_;
 }
 

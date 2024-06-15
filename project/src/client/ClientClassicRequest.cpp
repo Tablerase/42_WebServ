@@ -11,49 +11,54 @@
 /* ************************************************************************** */
 
 #include "Client.hpp"
+#include "Server.hpp"
 
 void Client::_managePostRequest( void ) {
-	// if (*(_requestLine.uri.end() - 1) == '/') {
-	// 	string	index = configServer->getIndexFile();
-	// 	if (index == "") {
-	// 		_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
-	// 		return ;
-	// 	} else {
-	// 		_requestLine.uri += _configServer.getIndexFile();
-	// 	}
-	// }
-	string extension = _requestLine.uri.substr(_requestLine.uri.find_last_of("."),
-			_requestLine.uri.npos);
-	// if (extension != "" && extension.find("/") == extension.npos
-	// 		&& _configServer->isACgiExtension == true) {
-			// do cgi things
-	// } else {
+	if (*(_requestLine.absolutePath.end() - 1) == '/') {
+		string	index = _locationBlockForTheRequest->index_;
+		if (index == "") {
+			_noBodyResponseDriver(403, "", false);
+			return ;
+		} else {
+			_requestLine.absolutePath += _locationBlockForTheRequest->index_;
+		}
+	}
+	string extension = _requestLine.absolutePath.substr(_requestLine.absolutePath.find_last_of("."),
+			_requestLine.absolutePath.npos);
+	map<string,string>::const_iterator it = _locationBlockForTheRequest->cgi_.find(extension);
+	if (extension != "" && extension.find("/") == extension.npos
+			&& it != _locationBlockForTheRequest->cgi_.end()) {
+		_cgiBinPath = it->second;
+		_cgiInit();	
+	} else {
 		_processClassicPostRequest();
-	// }
+	}
 }
 
 void	Client::_manageGetRequest( void ) {
 	if (*(_requestLine.filePath.end() - 1) == '/') {
-		//string	index = configServer->getIndexFile();
-		// if (index == "") {
-		// 	if (_configServer->isDirectoryListingAllowed == false) {
-		// 		_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
-		// 	} else {
+		string	index = _locationBlockForTheRequest->index_;
+		if (index == "") {
+			if (_locationBlockForTheRequest->autoindex_ == false) {
+				_buildNoBodyResponse("403", " Forbidden", "Access to the ressource is forbidden", false);
+			} else {
 				_listDirectory();
-	// 		}
-	// 		return ;
-	// 	} else {
-	// 		_requestLine.filePath += _configServer.getIndexFile();
-	// 	}
+			}
+			return ;
+		} else {
+			_requestLine.absolutePath += _locationBlockForTheRequest->index_;
+		}
 	}
-	string extension = _requestLine.filePath.substr(_requestLine.uri.find_last_of("."),
+	string extension = _requestLine.filePath.substr(_requestLine.absolutePath.find_last_of("."),
 			_requestLine.filePath.npos);
-	// if (extension != "" && extension.find("/") == extension.npos
-	// 		&& _configServer->isACgiExtension == true) {
-	// 		// do cgi things
-	// } else {
+	map<string,string>::const_iterator it = _locationBlockForTheRequest->cgi_.find(extension);
+	if (extension != "" && extension.find("/") == extension.npos
+			&& it != _locationBlockForTheRequest->cgi_.end()) {
+		_cgiBinPath = it->second;
+		_cgiInit();	
+	} else {
 		_processClassicGetRequest(extension);
-	// } 
+	} 
 }
 
 void Client::_statFile(const char* path) {
@@ -124,7 +129,6 @@ void Client::_listDirectory( void ) {
 			_noBodyResponseDriver(500, "", false);
 		}
 	}	
-	_requestLine.uri.erase(_requestLine.uri.find_first_of("?"), _requestLine.uri.npos);
 	_bodyStream << "<!DOCTYPE html><html><head><title> Listing of ";
 	_requestLine.filePath.erase(_requestLine.filePath.end() - 1);
 	_bodyStream << _requestLine.filePath.substr(_requestLine.filePath.find_last_of('/'),
@@ -134,7 +138,7 @@ void Client::_listDirectory( void ) {
 		if (dirEntry->d_name[0] == '.') {
 			continue;
 		}
-		_bodyStream << "<li><a href=\"" << _requestLine.uri << dirEntry->d_name;
+		_bodyStream << "<li><a href=\"" << _requestLine.filePath << dirEntry->d_name;
 		if (dirEntry->d_type == DT_DIR) {
 			_bodyStream << "/";
 		}

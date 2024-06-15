@@ -32,6 +32,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <vector>
 #include <netdb.h>
 #include <sys/epoll.h>
 #include <sys/stat.h>
@@ -42,6 +43,5 @@
 #include <sstream>
 #include <string>
 #include <dirent.h>
-#include "Server.hpp"
 
 #endif

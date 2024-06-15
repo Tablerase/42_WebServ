@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "EventLoop.hpp"
 #include "Server.hpp"
 #include "parsing.hpp"
 
@@ -40,9 +41,12 @@ int main(int argc, char** argv){
   for (vector<PortListener>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
     cout << *it;
   }
-
-  // Event loop
-  // TestServer();
+	try {
+		EventLoop mainLoop(listeners);
+		mainLoop.loopForEvent();
+	} catch (exception& e) {
+		cerr << "Could Not Start Server because of " << e.what() << endl;
+	}
 }
 
 /*

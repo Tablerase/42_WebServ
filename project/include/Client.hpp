@@ -24,6 +24,7 @@
 #	include <PortListener.hpp>
 
 class Server;
+struct location;
 
 typedef enum e_status {
 	IDLE = 0,
@@ -33,9 +34,10 @@ typedef enum e_status {
 
 typedef struct s_requestLine {
 	string	method;
-	string	uri;
+	// string	uri;
 	double	protocol;
 	string	filePath;
+	string	absolutePath;
 	string	cgiQuery;
 }							t_requestLine;
 
@@ -102,11 +104,12 @@ class Client {
 		void	_buildEnv( void );
 
 		// Variables for interaction with outside of the objects.
-		PortListener&	_owner;
-		EventLoop&		_mainEventLoop;
-		const	int			_connectionEntry;
-		time_t				_lastInteractionTime;
-		Server*				_configServer;
+		PortListener&		_owner;
+		EventLoop&			_mainEventLoop;
+		const	int				_connectionEntry;
+		time_t					_lastInteractionTime;
+		Server*					_configServer;
+		const	location*	_locationBlockForTheRequest;
 
 		// Concerning request parsing
 		t_status						_status;
@@ -128,6 +131,7 @@ class Client {
 		string					_cgiOutFilePath;
 		string					_cgiScriptName;
 		string					_cgiScriptPath;
+		string					_cgiBinPath;
 		pid_t						_cgiScriptPid;
 		bool						_cgiIsRunning;
 		bool						_requestIsHandledByCgi;

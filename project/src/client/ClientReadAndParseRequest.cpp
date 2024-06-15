@@ -11,7 +11,9 @@
 /* ************************************************************************** */
 
 #include "Client.hpp"
+#include "Server.hpp"
 #include "utils.hpp"
+#include <string>
 
 void	Client::_readRequest( void ) {
 	bool	thisReadAsBeenHandled = false;
@@ -132,16 +134,19 @@ void Client::_parseMethod(const string& method) {
 
 void Client::_parseUri(const string& uri) {
 	if (uri.size() > MAX_URI_SIZE) {
-		_noBodyResponseDriver(413, "", true);
+		_noBodyResponseDriver(414, "", true);
 	}
-	_requestLine.cgiQuery = uri.substr(uri.find_first_of("?", uri.npos));
+	_requestLine.cgiQuery = uri.substr(uri.find_first_of("?") + 1, uri.npos);
+	_requestLine.filePath = uri.substr(0, uri.find_first_of("?"));
 	if (normalizeStr(_requestLine.filePath) < 0) {
 		_noBodyResponseDriver(400, "", true);
 	}
-	//_configServer->getFullPath(_requestLine.filePath);
-	// if (_configServer.methodIsAllowed(_requestLine.filePath, _requestLine.method) == false) {
-	// 		_buildNoBodyResponse("405", " Method Not Allowed", "Method is not allowed for the specified route", true);
-	// }
+	_locationBlockForTheRequest = _configServer->get_location(_requestLine.filePath);
+	string	rootOfLocation(_locationBlockForTheRequest->root_);
+	if (*(rootOfLocation.end() - 1) == '/') {
+		rootOfLocation.erase(rootOfLocation.size() - 1, rootOfLocation.npos);
+	}
+	_requestLine.absolutePath = rootOfLocation + _requestLine.filePath;
 }
 
 void Client::_parseProtocol(const string& protocol) {

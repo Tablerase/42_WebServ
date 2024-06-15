@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Client.hpp"
+#include "Server.hpp"
 #include "utils.hpp"
 
 void	Client::_parseHeader( void ) {
@@ -86,9 +87,9 @@ void	Client::_checkContentLength( void ) {
 	_contentLength = strtol(it->second.c_str(), &endptr, 10);
 	if (*endptr != '\0' || _contentLength < 0) {
 			_noBodyResponseDriver(400, "", true);
-	}// else if (_contentLength >= _configServer->getMaxBodySize) {
-	// 		_buildNoBodyResponse("413", " Content Too Large", "Message Body is too large for the server configuration", true);
-	// }
+	} else if (_contentLength >= _configServer->get_max_client_body_size()) {
+			_noBodyResponseDriver(413, "", true);
+	}
 }
 
 void Client::_parseChunkedRequest(string requestPart) {
@@ -103,10 +104,10 @@ void Client::_parseChunkedRequest(string requestPart) {
 		}
 		requestPart.erase(0, chunk_size.size() + 2);
 		num_size = strtol(chunk_size.c_str(), &endptr, 16);
-		// if (num_size >= _configServer->getMaxBodySize()) {
-		// 	_buildNoBodyResponse("413", " Content Too Large", "Message Body is too large for the server configuration", true);
-		// 	break ;
-	//	}
+		if (num_size >= _configServer->get_max_client_body_size()) {
+			_noBodyResponseDriver(413, "", true);
+			break ;
+	}
 		if (*endptr != '\0') {
 			_noBodyResponseDriver(400, "", true);
 			break ;

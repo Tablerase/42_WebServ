@@ -28,6 +28,8 @@ Client::Client(int fd, PortListener& owner, EventLoop& eventLoop): _owner(owner)
 	_requestIsChunked = false;
 	_contentLength = 0;
 	_requestIsHandledByCgi = false;
+	_cgiBinPath = "";
+	_locationBlockForTheRequest = NULL;
 	return ;
 }
 
