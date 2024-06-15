@@ -23,16 +23,18 @@ void	Client::_readRequest( void ) {
 	if (_singleReadBytes <= 0) {
 		throw CloseMeException();
 	}
-	memset(_buffer, 0, _singleReadBytes);
 	const string request(_buffer, _singleReadBytes);
+	memset(_buffer, 0, _singleReadBytes);
 	if (_headerIsFullyRed == false) {
+		cout << request << endl;
 		const size_t endOfHeader = request.find("\r\n\r\n");
+		cout << endOfHeader << endl;
 		if (endOfHeader == request.npos) {
 			_header += request;
 			thisReadAsBeenHandled = true;
 		} else {
-			_header += request.substr(0, endOfHeader);
-			if (request.begin() + endOfHeader + 5 == request.end()) {
+			_header += request.substr(0, endOfHeader + 2);
+			if (request.begin() + endOfHeader + 4 == request.end()) {
 				thisReadAsBeenHandled = true;
 			} else {
 				bodyStart = endOfHeader + 5;
@@ -77,7 +79,7 @@ void	Client::_parseRequest( void ) {
 	_header.erase(0, host.size() + 2);
 	substituteSpaces(requestLine); substituteSpaces(host);
 	transform(host.begin(), host.end(), host.begin(), ::tolower);
-	if (_header.compare(0, 6, "host: ") != 0) {
+	if (host.compare(0, 6, "host: ") != 0) {
 		_noBodyResponseDriver(400, "", true);
 		return ;
 	}
@@ -99,7 +101,8 @@ void	Client::_parseRequest( void ) {
 
 void	Client::_parseRequestLine( const string& requestLine) {
 	const string	method = requestLine.substr(0, requestLine.find_first_of(" "));
-	const string	uri = requestLine.substr(requestLine.find_first_of(" ") + 1, requestLine.find_last_of(" "));
+	string	uri = requestLine.substr(requestLine.find_first_of(" ") + 1, requestLine.npos);
+	uri.erase(uri.find_first_of(" "), uri.npos);
 	const string	protocol = requestLine.substr(requestLine.find_last_of(" ") + 1, requestLine.npos);
 	
 	_parseProtocol(protocol);

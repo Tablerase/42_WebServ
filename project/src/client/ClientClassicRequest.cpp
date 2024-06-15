@@ -36,7 +36,9 @@ void Client::_managePostRequest( void ) {
 }
 
 void	Client::_manageGetRequest( void ) {
+	cout << "The request is :" << _requestLine.filePath << endl;
 	if (*(_requestLine.filePath.end() - 1) == '/') {
+		cout << "I got a request ending with a /" << endl;
 		string	index = _locationBlockForTheRequest->index_;
 		if (index == "") {
 			if (_locationBlockForTheRequest->autoindex_ == false) {
@@ -47,10 +49,11 @@ void	Client::_manageGetRequest( void ) {
 			return ;
 		} else {
 			_requestLine.absolutePath += _locationBlockForTheRequest->index_;
+			cout << "Inedexd location" <<  _requestLine.absolutePath << endl;
 		}
 	}
-	string extension = _requestLine.filePath.substr(_requestLine.absolutePath.find_last_of("."),
-			_requestLine.filePath.npos);
+	string extension = _requestLine.absolutePath.substr(_requestLine.absolutePath.find_last_of("."),
+			_requestLine.absolutePath.npos);
 	map<string,string>::const_iterator it = _locationBlockForTheRequest->cgi_.find(extension);
 	if (extension != "" && extension.find("/") == extension.npos
 			&& it != _locationBlockForTheRequest->cgi_.end()) {
@@ -63,6 +66,7 @@ void	Client::_manageGetRequest( void ) {
 
 void Client::_statFile(const char* path) {
 	struct stat buffer;
+	cout << path << endl;
 	if(stat(path, &buffer) != 0) {
 		if (errno == EACCES) {
 			_noBodyResponseDriver(403, "", false);
@@ -78,6 +82,7 @@ void Client::_statFile(const char* path) {
 			return ;
 		}
 	}
+	cout << "Get rid of global pb" << endl;
 	if (_requestLine.method == "GET" || _requestIsHandledByCgi == true) {
 		if (!(S_IRUSR & buffer.st_mode)) {
 			_noBodyResponseDriver(403, "", false);
@@ -98,23 +103,29 @@ void Client::_statFile(const char* path) {
 }
 
 void	Client::_processClassicGetRequest( string& extension ) {
+	cout << "A classic Get reauest" << endl;
 	_generateContentExtension(extension);	
 	if (_checkExtensionMatch(extension) == false) {
 		string allowedContent = "Content-Type: " + extension;
-			_noBodyResponseDriver(403, allowedContent, true);
+		cout << "Bad content ?" << endl;
+			_noBodyResponseDriver(406, allowedContent, true);
 		return ;
 	} 
-	_statFile(_requestLine.filePath.c_str());
+	cout << "I stat" << endl;
+	_statFile(_requestLine.absolutePath.c_str());
 	if (_responseIsReady == true) {
 		return ;
 	}
 	ifstream toSend;
+	cout << "stream" << endl;
 	toSend.open(_requestLine.filePath.c_str());
 	if (toSend.fail()) {
 			_noBodyResponseDriver(500, "", false);
 	}
 	_bodyStream << toSend.rdbuf();
 	toSend.close();
+	cout << "All good ?" << endl;
+	cout << "Stream Content" << _bodyStream.str();
 	_fillResponse("200 OK", false);
 }
 

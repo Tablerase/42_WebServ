@@ -32,7 +32,7 @@ class EventLoop {
 
 		int						loopForEvent( void );
 		int						getEpollFd( void ) const;
-		void					addFdOfInterest(int fd, PortListener owner, int eventsOfInterest);
+		void					addFdOfInterest(int fd, PortListener *owner, int eventsOfInterest);
 		void					modifyFdOfInterest(int fd, int eventsOfInterest) const;
 		void					deleteFdOfInterest(int fd);
 
@@ -40,15 +40,15 @@ class EventLoop {
 		
 		EventLoop( void );
 
-		PortListener	_getOwner(int fd);
+		PortListener*	_getOwner(int fd);
 		static void		_sigIntCatcher( int signal );
 		void					_checkTimeouts();
 
-		map<const int, PortListener>	_fdMap;
-		vector<PortListener>					_PortListenerList;
-		epoll_event										_eventManager[MAX_EVENTS];
-		int														_epollFd;
-		static bool										_serverIsRunning;
+		map<const int, PortListener *>	_fdMap;
+		vector<PortListener *>						_PortListenerList;
+		epoll_event											_eventManager[MAX_EVENTS];
+		int															_epollFd;
+		static bool											_serverIsRunning;
 };
 
 #endif

@@ -30,7 +30,7 @@ void Client::_generateContentExtension(string& path) {
 }
 
 bool	Client::_checkExtensionMatch(const string& extension) {
-	const map<string, string>::const_iterator it = _headerFields.find("Accept");
+	const map<string, string>::const_iterator it = _headerFields.find("accept");
 	if (it == _headerFields.end()) {
 		if (extension != "text/plain" && extension != "text/html") {
 			return false;
@@ -38,6 +38,7 @@ bool	Client::_checkExtensionMatch(const string& extension) {
 			return true;
 		}
 	}
+	cout << it->second << endl;
 	if (it->second.find("*/*") != it->second.npos || it->second.find(extension) != it->second.npos) {
 		return true;
 	} else {
@@ -97,10 +98,12 @@ on our side ... Maybe try refresh the page ?", isFatal);
 }
 
 void Client::_buildNoBodyResponse(string status, string info, string body, bool isFatal) {
-	const string	customPage = _configServer->get_error_page(strtol(status.c_str(), NULL, 10));
 	bool		customPageIsPresent = false;
-	if (customPage != "") {
-		customPageIsPresent = _loadCustomStatusPage(customPage);
+	if (_configServer != NULL) {
+		const string	customPage = _configServer->get_error_page(strtol(status.c_str(), NULL, 10));
+		if (customPage != "") {
+			customPageIsPresent = _loadCustomStatusPage(customPage);
+		}
 	}
 	if (customPageIsPresent == false) {
 		_bodyStream << "<!doctype html><title>" << status << info << "</title><h1>"
@@ -141,7 +144,8 @@ bool Client::_loadCustomStatusPage(string path) {
 }
 
 void	Client::_fillResponse( string status, bool shouldClose ) {
-	const map<string, string>::const_iterator it = _responseHeader.find("Connection");
+	cout << "In fill response" << endl;
+	const map<string, string>::const_iterator it = _headerFields.find("connection");
 	if (it == _responseHeader.end() || it->second.compare("Keep-Alive") != 0) {
 		shouldClose = true;
 	}
@@ -154,7 +158,9 @@ void	Client::_fillResponse( string status, bool shouldClose ) {
 		}
 	}
 	_response << "HTTP/1.1 " << status << "\r\n";
-	_response << "Server: " << _configServer->get_name() << "\r\n";
+	if (_configServer != NULL) {
+		_response << "Server: " << _configServer->get_name() << "\r\n";
+	}
 	for (map<string, string>::iterator it = _responseHeader.begin(); it != _responseHeader.end(); ++it) {
 		_response << it->first << it->second << "\r\n";
 	} _response << "\r\n";
@@ -167,8 +173,11 @@ void	Client::_fillResponse( string status, bool shouldClose ) {
 }
 
 void	Client::_sendAnswer( void ) {
+	cout << "The response I'm about to send : " << _response.str();
 	const size_t writeValue = write(_connectionEntry, _response.str().c_str(), _response.str().size());
 	if (writeValue != _response.str().size() || _connectionShouldBeClosed == true) {
+		cout << writeValue << "   " << _response.str().size() << boolalpha << _connectionShouldBeClosed << endl;
+		cout << "gneuuuuu" << endl;
 		throw CloseMeException();
 	}
 	_requestLine.cgiQuery.clear();

@@ -24,24 +24,28 @@ EventLoop::EventLoop( void ) {
 	return ;
 }
 
-EventLoop::EventLoop(vector<PortListener>& portVector): _PortListenerList(portVector) {
+EventLoop::EventLoop(vector<PortListener>& portVector) {
 	_epollFd = epoll_create(1);
 	if (_epollFd < 0) {
 		throw runtime_error(strerror(errno));
 	}
-	for (vector<PortListener>::iterator it = _PortListenerList.begin();
+	for (vector<PortListener>::iterator it = portVector.begin();
+			it != portVector.end(); ++it) {
+		_PortListenerList.push_back(&(*it));
+	}
+	for (vector<PortListener *>::iterator it = _PortListenerList.begin();
 			it != _PortListenerList.end(); ++it) {
 		try {
-			(*it).initSocket();
-			_eventManager[0].data.fd = (*it).getSocketFd();
-			(*it).setMainEventLoop(this);
+			(*it)->initSocket();
+			_eventManager[0].data.fd = (*it)->getSocketFd();
+			(*it)->setMainEventLoop(this);
 			_eventManager[0].events = EPOLLIN;
 			if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, _eventManager[0].data.fd, &_eventManager[0]) < 0) {
 				throw runtime_error(strerror(errno));
 			}
-			_fdMap.insert(pair<const int, PortListener>(_eventManager[0].data.fd, *it));
+			_fdMap.insert(pair<const int, PortListener *>(_eventManager[0].data.fd, *it));
 		} catch (exception& e) {
-			cerr << "Port Number " << (*it).getListeningPort() << "could not start because "
+			cerr << "Port Number " << (*it)->getListeningPort() << "could not start because "
 				<< e.what() <<endl;
 		}
 	}
@@ -57,19 +61,19 @@ int	EventLoop::getEpollFd( void ) const {
 	return(_epollFd);
 }
 
-void	EventLoop::addFdOfInterest(int fd, PortListener Owner, int eventsOfInterest) {
+void	EventLoop::addFdOfInterest(int fd, PortListener *Owner, int eventsOfInterest) {
 	epoll_event	newEvent;
 	newEvent.data.fd = fd;
 	newEvent.events = eventsOfInterest;
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, fd, &newEvent) < 0) {
 		throw runtime_error(strerror(errno));
 	}
-	_fdMap.insert(pair<const int, PortListener>(fd, Owner));
+	_fdMap.insert(pair<const int, PortListener *>(fd, Owner));
 	return ;
 }
 
 void	EventLoop::deleteFdOfInterest(int fd) {
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, fd, NULL) < 0) {
+	if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, NULL) < 0) {
 		throw runtime_error(strerror(errno));
 	}
 	_fdMap.erase(fd);
@@ -83,7 +87,7 @@ void	EventLoop::modifyFdOfInterest(int fd, int eventsOfInterest) const {
 	epoll_ctl(_epollFd, EPOLL_CTL_MOD, fd, &to_modify);
 }
 
-PortListener	EventLoop::_getOwner(int fd) {
+PortListener*	EventLoop::_getOwner(int fd) {
 	return (_fdMap.find(fd)->second);
 }
 
@@ -110,7 +114,7 @@ int EventLoop::loopForEvent( void ) {
 		}
 		for (int i = 0; i < received_events; ++i) {
 			try {
-				_getOwner(_eventManager[i].data.fd).manageEvent(_eventManager[i].data.fd);
+				_getOwner(_eventManager[i].data.fd)->manageEvent(_eventManager[i].data.fd);
 			} catch (Client::ChildIsExiting& e) {
 				cerr << e.what() << endl;
 				return (1);
@@ -122,9 +126,9 @@ int EventLoop::loopForEvent( void ) {
 }
 
 void	EventLoop::_checkTimeouts() {
-	for (vector<PortListener>::iterator it = _PortListenerList.begin();
+	for (vector<PortListener*>::iterator it = _PortListenerList.begin();
 			it != _PortListenerList.end(); ++it) {
-		(*it).getTimeout();
+		(*it)->getTimeout();
 	}
 	return ;
 }

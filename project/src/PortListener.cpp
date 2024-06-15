@@ -101,7 +101,7 @@ void	PortListener::_acceptConnection( void ) {
 		cerr << "Failed connection to port" << _listeningPort << ":" << strerror(errno) << endl;
 	}
 	try {
-		_mainEventLoop->addFdOfInterest(clientFd, *this, EPOLLIN);
+		_mainEventLoop->addFdOfInterest(clientFd, this, EPOLLIN);
 	} catch (runtime_error& e) {
 		cerr << "Epoll_ctl_failure : " << e.what() << " closing correspondant connection" << endl;
 		close (clientFd);
@@ -136,7 +136,7 @@ void PortListener::_writeMinimalAnswer( int fd, string status,
 	response << "Connection: close\r\n\r\n";
 	response << messageBody;
 	_immediateResponse.insert(pair<int, string>(fd, response.str()));
-	_mainEventLoop->addFdOfInterest(fd, *this, EPOLLOUT);
+	_mainEventLoop->addFdOfInterest(fd, this, EPOLLOUT);
 }
 
 void	PortListener::_closeConnection(int fd) {
@@ -166,7 +166,8 @@ void	PortListener::_sendMinimalAnswer(int fd, string answer) {
 }
 
 void	PortListener::manageEvent(int fd) {
-	map<int, Client*>::iterator it;
+	cout << "Client Map Size is : " << _clientMap.size() << endl;
+	map<int, Client*>::iterator it = _clientMap.find(fd);
 	const string*								immediateResponse;
 	if (fd == _socketFd) {
 		try {

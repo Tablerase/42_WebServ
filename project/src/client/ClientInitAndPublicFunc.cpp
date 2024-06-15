@@ -30,6 +30,7 @@ Client::Client(int fd, PortListener& owner, EventLoop& eventLoop): _owner(owner)
 	_requestIsHandledByCgi = false;
 	_cgiBinPath = "";
 	_locationBlockForTheRequest = NULL;
+	_configServer = NULL;
 	return ;
 }
 

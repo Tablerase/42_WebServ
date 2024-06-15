@@ -1,5 +1,5 @@
 server {
-    listen 1313;
+    listen 8080;
     server_name localhost;
     location / {
         root ./web/pages;
@@ -9,6 +9,7 @@ server {
         upload_file_path ./web/upload;
     }
     client_max_body_size 1;
+    error_page 404 ./web/errors/404.html;
     location /data/ {
         root ./web1/;
         index def.html;
@@ -18,4 +19,18 @@ server {
         cgi .rb /home/desktop/ruby.rb;
     }
     error_page 403 ./web/errors/403.html;
+}
+
+server {
+    listen 8080;
+    server_name abricot.html;
+}
+
+server {
+    listen 60;
+    server_name hello;
+    location / {
+        root 1;
+        index index.html;
+    }
 }
