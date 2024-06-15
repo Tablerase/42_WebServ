@@ -75,12 +75,12 @@ std::map<std::string, location> const &Server::get_locations() const {
  * @return location: the location struct
  * @note If the path is not found, return the default("/") location
 */
-location const &Server::get_location(std::string const &path) const {
+location const *Server::get_location(std::string const &path) const {
   try {
-    return this->locations_.at(path);
+    return &(this->locations_.at(path));
   }
   catch (std::out_of_range &oor) {
-    return this->locations_.at("/");
+    return &(this->locations_.at("/"));
   }
 }
 

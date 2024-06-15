@@ -102,7 +102,7 @@ public:
   int const         &get_max_client_body_size() const;
   
   std::map<std::string, location> const &get_locations() const;
-  location const    &get_location(std::string const &path) const;
+  location const    *get_location(std::string const &path) const;
   map<int,string> const &get_error_pages() const;
   string const      get_error_page(int const &error_code) const;
 
