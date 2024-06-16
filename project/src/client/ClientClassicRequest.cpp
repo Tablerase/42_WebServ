@@ -38,10 +38,23 @@ void Client::_managePostRequest( void ) {
 	}
 }
 
+inline bool	Client::_indexFileExist( const string path) {
+	cout << "stating indec" << endl;
+	struct stat	buffer;
+	const int ret = stat(path.c_str(), &buffer);
+	if (ret == 0) {
+		cout << "stat succed" << endl;
+		return true;
+	} else if (errno != ENOENT) {
+		cout << "errno" << endl;
+		return true;
+	} return false;
+}
+
 void	Client::_manageGetRequest( void ) {
 	// cout << "The request is :" << _requestLine.filePath << endl;
 	if (*(_requestLine.filePath.end() - 1) == '/') {
-		// cout << "I got a request ending with a /" << endl;
+		cout << "I got a request ending with a /" << endl;
 		string	index = _locationBlockForTheRequest->index_;
 		if (index == "") {
 			if (_locationBlockForTheRequest->autoindex_ == false) {
@@ -50,9 +63,13 @@ void	Client::_manageGetRequest( void ) {
 				_listDirectory();
 			}
 			return ;
+		} else if (_indexFileExist(_requestLine.absolutePath + _locationBlockForTheRequest->index_) == false
+				&& _locationBlockForTheRequest->autoindex_ == true){
+			cout << "Listing dir" << endl;
+			_listDirectory();
+			return ;
 		} else {
 			_requestLine.absolutePath += _locationBlockForTheRequest->index_;
-			// cout << "Inedexd location" <<  _requestLine.absolutePath << endl;
 		}
 	}
 	string extension = _requestLine.absolutePath.substr(_requestLine.absolutePath.find_last_of("."),
@@ -130,15 +147,16 @@ void	Client::_processClassicGetRequest( string& extension ) {
 }
 
 void Client::_listDirectory( void ) {
-	DIR*	directoryPtr = opendir(_requestLine.filePath.c_str());
+	DIR*	directoryPtr = opendir(_requestLine.absolutePath.c_str());
 	if (directoryPtr == NULL) {
 		if (errno == ENOENT) {
 			_noBodyResponseDriver(404, "", false);
 		} else if (errno == EACCES) {
-			_noBodyResponseDriver(403, "", false);
+			_noBodyResponseDriver(404, "", false);
 		} else {
 			_noBodyResponseDriver(500, "", false);
 		}
+		return ;
 	}	
 	_bodyStream << "<!DOCTYPE html><html><head><title> Listing of ";
 	_requestLine.filePath.erase(_requestLine.filePath.end() - 1);
@@ -149,7 +167,7 @@ void Client::_listDirectory( void ) {
 		if (dirEntry->d_name[0] == '.') {
 			continue;
 		}
-		_bodyStream << "<li><a href=\"" << _requestLine.filePath << dirEntry->d_name;
+		_bodyStream << "<li><a href=\"" << _requestLine.filePath << "/" << dirEntry->d_name;
 		if (dirEntry->d_type == DT_DIR) {
 			_bodyStream << "/";
 		}

@@ -34,6 +34,7 @@ void	Client::_readRequest( void ) {
 		if (endOfHeader == request.npos) {
 			_header += request;
 			thisReadAsBeenHandled = true;
+			return ;
 		} else {
 			_header += request.substr(0, endOfHeader + 2);
 			if (request.begin() + endOfHeader + 4 == request.end()) {
@@ -129,7 +130,7 @@ void Client::_parseMethod(const string& method) {
 	};
 	size_t	i;
 	for (i = 0; i < 8 && method.compare(knownMethods[i]) != 0; ++i) {}
-	if (i < 2) {
+	if (i <= 2) {
 		_requestLine.method = knownMethods[i];
 	} else if (i != 8) {
 		_noBodyResponseDriver(501, "", true);

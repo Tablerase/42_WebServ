@@ -64,26 +64,27 @@ class Client {
 
 	private :
 
-		void	_readRequest( void );
-		void	_sendAnswer( void );
-		void	_parseRequest( void );
-		void	_parseRequestLine( const string& requestLine );
-		void	_parseMethod( const string& method);
-		void 	_parseUri( const string& uri);
-		void	_parseProtocol( const string& protocol);
-		void	_manageDeleteRequest( void );
-		void	_manageGetRequest( void );
-		void	_managePostRequest( void );
-		void	_processClassicGetRequest(string& extension );
-		void	_processClassicPostRequest( void );
-		bool	_checkExtensionMatch(const string& extension);
-		void	_listDirectory( void );
-		void	_buildNoBodyResponse(string status, string info, string body, bool isFatal);
-		void	_noBodyResponseDriver( const int status, const string& optionnalBody, const bool isFatal);
-		bool	_loadCustomStatusPage(string path);
-		void	_fillResponse( string status, bool shouldClose );
-		void	_generateContentExtension(string& path);
-		void	_statFile(const char* path);
+		void				_readRequest( void );
+		void				_sendAnswer( void );
+		void				_parseRequest( void );
+		void				_parseRequestLine( const string& requestLine );
+		void				_parseMethod( const string& method);
+		void 				_parseUri( const string& uri);
+		void				_parseProtocol( const string& protocol);
+		void				_manageDeleteRequest( void );
+		void				_manageGetRequest( void );
+		void				_managePostRequest( void );
+		void				_processClassicGetRequest(string& extension );
+		void				_processClassicPostRequest( void );
+		bool				_checkExtensionMatch(const string& extension);
+		void				_listDirectory( void );
+		void				_buildNoBodyResponse(string status, string info, string body, bool isFatal);
+		void				_noBodyResponseDriver( const int status, const string& optionnalBody, const bool isFatal);
+		bool				_loadCustomStatusPage(string path);
+		void				_fillResponse( string status, bool shouldClose );
+		void				_generateContentExtension(string& path);
+		void				_statFile(const char* path);
+		inline bool	_indexFileExist( const string path);
 		
 		// ClientParseHeader.cpp
 		void	_parseHeader( void );

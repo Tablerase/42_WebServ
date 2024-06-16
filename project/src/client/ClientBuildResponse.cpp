@@ -27,6 +27,12 @@ void Client::_generateContentExtension(string& path) {
 	} else {
 		path.insert(0, "text/");
 	}
+	if (_responseHeader.size() != 0) {
+		map<string, string>::iterator it;
+		if ((it = _responseHeader.find("Content-type: ")) != _responseHeader.end()) {
+			_responseHeader.erase("Content-type: ");
+		}
+	}
 	_responseHeader.insert(pair<string, string>("Content-type: ", path));
 }
 
@@ -48,9 +54,9 @@ bool	Client::_checkExtensionMatch(const string& extension) {
 }
 
 void Client::_noBodyResponseDriver(const int status, const string& optionalBody, bool isFatal) {
-	if (status >= 500) {
-		throw runtime_error("coucou le s");
-	}
+	// if (status >= 500) {
+	// 	throw runtime_error("coucou le s");
+	// }
 	cout << "A error happends with request : " << _copyForDebug << endl;
 	cout << "Occured Error is : " << status << endl;
 	switch (status) {
@@ -86,14 +92,16 @@ void Client::_noBodyResponseDriver(const int status, const string& optionalBody,
 			break ;
 		case 426 :
 			_buildNoBodyResponse("426", " Upgrade Required", "This service require use of HTTP/1.1 protocol", isFatal);	
+			break ;
 		case 500 :
 			_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong\
 on our side ... Maybe try refresh the page ?", isFatal);
 			break ;
 		case 501 :
 			_buildNoBodyResponse("501", " Not Implemented", "Requested method isn't implemented", isFatal);
+			break ;
 		case 504 :
-			_buildNoBodyResponse("504", "Gateway Timeout", "Timeout occurs while executing CGI", isFatal);
+			_buildNoBodyResponse("504", " Gateway Timeout", "Timeout occurs while executing CGI", isFatal);
 			break ;
 		case 505 :
 			_buildNoBodyResponse("505", " HTTP Protocol not supported", "Server protocol is HTTP/1.1", isFatal);
@@ -108,6 +116,7 @@ void Client::_buildNoBodyResponse(string status, string info, string body, bool 
 	if (_configServer != NULL) {
 		const string	customPage = _configServer->get_error_page(strtol(status.c_str(), NULL, 10));
 		if (customPage != "") {
+			cout << customPage << endl;
 			customPageIsPresent = _loadCustomStatusPage(customPage);
 		}
 	}
@@ -126,19 +135,23 @@ void Client::_buildNoBodyResponse(string status, string info, string body, bool 
 bool Client::_loadCustomStatusPage(string path) {
 	struct stat buf;
 	if (stat(path.c_str(), &buf) != 0) {
-		return (0);
+		cout << "stat fail" << endl;
+		return (false);
 	}
-	else if (!S_ISREG(buf.st_mode) == false) {
-		return (0);
+	else if (S_ISREG(buf.st_mode) == false) {
+		cout << "ain't regular" << endl;
+		return (false);
 	}
 	ifstream customPage;
 	customPage.open(path.c_str());
 	if (customPage.fail()) {
-		return (0);
+		cout << "ain't open" << endl;
+		return (false);
 	}
-	string extension = path.substr(path.find_last_of("/", path.npos));
+	string extension = path.substr(path.find_last_of(".", path.npos));
 	_generateContentExtension(extension);
 	if (_checkExtensionMatch(extension) == false) {
+		cout << "ain't extension" << endl;
 		return (0);
 	}
 	_bodyStream << customPage.rdbuf();
@@ -146,7 +159,7 @@ bool Client::_loadCustomStatusPage(string path) {
 	stringstream size;
 	size << buf.st_size;
 	_responseHeader.insert(pair<string, string>("Content-length: ", size.str()));
-	return (1);
+	return (true);
 }
 
 void	Client::_fillResponse( string status, bool shouldClose ) {
@@ -185,12 +198,13 @@ void	Client::_fillResponse( string status, bool shouldClose ) {
 
 void	Client::_sendAnswer( void ) {
 	const size_t writeValue = write(_connectionEntry, _response.str().c_str(), _response.str().size());
+	cout << "Sending a response" << endl;
+	cout << _response.str() << endl;
 	if (writeValue != _response.str().size()) {
 		cout << "Close bc of write bytes" << endl;
 		throw CloseMeException();
 	} else if (_connectionShouldBeClosed == true) {
 		cout << "Close bc of preceed error" << endl;
-		cout << _response.str() << endl;
 		throw CloseMeException();
 	}
 	_requestLine.cgiQuery.clear();
