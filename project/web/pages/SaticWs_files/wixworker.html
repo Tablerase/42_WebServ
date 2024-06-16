@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <script type="text/javascript" src="wixworker_data/Wix.js"></script>
+        <script>
+var _sw_wix = function () {
+    return {
+        site_info: null,
+        referrer: null,
+        wix_setup_code: function () {
+            var head = document.getElementsByTagName("head")[0] || document.documentElement;
+            var swscript = document.createElement("script");
+            var loc = (("https:" == document.location.protocol) ? "https://" : "http://");
+            swscript.type = 'text/javascript';
+            swscript.src = loc + 'analytics.sitewit.com/partner/wix_dashboard/d0762e2c-c44f-48ec-a765-42f45add1f2f/noinit-noconnect/sw.js';
+	        swscript.onload = this.sw_js_loaded;
+	        head.appendChild(swscript);
+        },
+        wix_navigation_change_hook: function (navInfo) {
+            Wix.Worker.getSiteInfo(
+               function (siteInfo) {
+                   try {
+                       if (siteInfo.url.indexOf("//editor.wix.com") < 0){
+                           sw.hit.set_domain(_wix.fixDomain(siteInfo.baseUrl));
+                           sw.hit.set_page(siteInfo.url);
+                           sw.get_referrer = function () {
+                               return _wix.referrer != null ? _wix.referrer : "-";
+                           };
+                           sw.register_page_view();
+                           _wix.referrer = siteInfo.url;
+                       }
+                   }
+                   catch (err) { console.log(err); console.log(siteInfo); }
+               }
+
+           );
+        },
+        sw_js_loaded: function () {
+
+            //_wix.sw = new _sw_analytics();
+            //_wix.sw.id = 'd0762e2c-c44f-48ec-a765-42f45add1f2f';
+            //sw.set_beta(true);
+
+
+            Wix.Worker.getSiteInfo(
+                function (siteInfo) {
+                    try {
+                       if (siteInfo.url.indexOf("//editor.wix.com") < 0){
+	                        sw.hit.set_domain(_wix.fixDomain(siteInfo.baseUrl));
+	                        sw.hit.set_page(siteInfo.url);
+	                        _wix.referrer = siteInfo.url;
+	                        sw.get_referrer = function () {
+	                            return siteInfo.referer != null ? siteInfo.referer : "-";
+	                        };
+	                        sw.register_page_view();
+	                        _wix.referrer = siteInfo.referer;
+                       }
+                    }
+                    catch (err) { console.log(err); console.log(siteInfo); }
+                    Wix.Worker.addEventListener(Wix.Events.PAGE_NAVIGATION, _wix.wix_navigation_change_hook);
+
+                }
+            );
+
+        },
+        fixDomain: function (url) {
+            var domain;
+            if (url.indexOf("://") > -1) {
+                domain = url.split('/')[2];
+            }
+            else {
+                domain = url.split('/')[0];
+            }
+            domain = domain.split(':')[0];
+            return domain;
+        }
+    }
+};
+var _wix = new _sw_wix();
+_wix.wix_setup_code();
+		</script><script type="text/javascript" src="wixworker_data/sw.js"></script>
+
+
+	</head>
+	<body>
+
+	
+</body></html>

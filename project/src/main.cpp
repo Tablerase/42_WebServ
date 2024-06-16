@@ -41,12 +41,12 @@ int main(int argc, char** argv){
   for (vector<PortListener>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
     cout << *it;
   }
-	try {
+	// try {
 		EventLoop mainLoop(listeners);
 		mainLoop.loopForEvent();
-	} catch (exception& e) {
-		cerr << "Could Not Start Server because of " << e.what() << endl;
-	}
+	// } catch (exception& e) {
+	// 	cerr << "Could Not Start Server because of " << e.what() << endl;
+	// }
 }
 
 /*

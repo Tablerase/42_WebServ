@@ -183,7 +183,9 @@ void	PortListener::manageEvent(int fd) {
 			it->second->manageNewEvent();
 		} catch ( Client::ChildIsExiting& e) {
 			throw Client::ChildIsExiting();
-		} catch (exception& e) {
+		// } catch (length_error& e) {
+		// 	cout << "Length Error ! " << e.what() << endl;
+		} catch (Client::CloseMeException& e) {
 			cerr << e.what() << endl;
 			_closeConnection(fd);
 		}

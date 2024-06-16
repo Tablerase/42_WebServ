@@ -115,7 +115,7 @@ class Client {
 		t_status						_status;
 		t_requestLine				_requestLine;
 		char								_buffer[BUFFER_SIZE];
-		size_t							_singleReadBytes;
+		int							_singleReadBytes;
 		size_t							_bytesReadFromBody;
 		string							_header;
 		string							_body;
@@ -147,6 +147,7 @@ class Client {
 		map<string, string>	_responseHeader;
 		bool								_responseIsReady;
 		bool								_connectionShouldBeClosed;
+		string	_copyForDebug;
 };
 
 #endif

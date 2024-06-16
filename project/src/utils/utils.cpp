@@ -31,16 +31,22 @@ void	substituteSpaces(string& s) {
 int	normalizeStr(string &s) {
 	size_t i = s.find("%");
 	while (i != s.npos) {
-		string to_convert = s.substr(i, i + 2);
+		string to_convert = s.substr(i, 3);
+		cout << "New COnvert str : " << to_convert << endl;
 		if (to_convert.size() != 3) {
+			cout << "Size problem" << endl;
 			return (-1);
 		}
+		to_convert.erase(0, 1);
+		cout << "Convert str after trimming % : " << to_convert << endl;
 		int n = strtol(to_convert.c_str(), NULL, 16);
 		if (isprint(n) == 0) {
+			cout << n << "Not printable" << endl;
 			return (-1);
 		}
 		char c_str[2];
 		if (sprintf(c_str, "%c", n) < 0) {
+			cout << "less then 0" << endl;
 			return (-1);
 		}
 		s.replace(i, 3, c_str);

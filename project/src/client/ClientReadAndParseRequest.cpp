@@ -14,14 +14,15 @@
 #include "Server.hpp"
 #include "utils.hpp"
 #include <string>
+#include <sys/socket.h>
 
 void	Client::_readRequest( void ) {
 	bool	thisReadAsBeenHandled = false;
 	size_t	bodyStart = 0;
 	_status = READING;
-	_singleReadBytes = read(_connectionEntry, _buffer, BUFFER_SIZE);	
+	_singleReadBytes = recv(_connectionEntry, _buffer, BUFFER_SIZE, MSG_DONTWAIT);	
 	if (_singleReadBytes <= 0) {
-		// cout << "Failed read " << "Red bytes : " << _singleReadBytes << endl;
+		cout << "Failed read " << "Red bytes : " << _singleReadBytes << endl;
 		throw CloseMeException();
 	}
 	const string request(_buffer, _singleReadBytes);
@@ -29,7 +30,7 @@ void	Client::_readRequest( void ) {
 	if (_headerIsFullyRed == false) {
 		// cout << request << endl;
 		const size_t endOfHeader = request.find("\r\n\r\n");
-		// cout << endOfHeader << endl;
+		cout << endOfHeader << endl;
 		if (endOfHeader == request.npos) {
 			_header += request;
 			thisReadAsBeenHandled = true;
@@ -41,6 +42,7 @@ void	Client::_readRequest( void ) {
 				bodyStart = endOfHeader + 5;
 			}
 			_parseRequest();
+			cout << "After Parse request" << boolalpha << _responseIsReady << endl;
 		}
 	}
 	if (thisReadAsBeenHandled == false && _responseIsReady == false) {
@@ -74,6 +76,7 @@ void	Client::_readRequest( void ) {
 }
 
 void	Client::_parseRequest( void ) {
+	_copyForDebug = _header;
 	string requestLine = _header.substr(0, _header.find("\r\n"));
 	_header.erase(0, requestLine.size() + 2);
 	string host = _header.substr(0, _header.find("\r\n"));
@@ -143,6 +146,7 @@ void Client::_parseUri(const string& uri) {
 	_requestLine.cgiQuery = uri.substr(uri.find_first_of("?") + 1, uri.npos);
 	_requestLine.filePath = uri.substr(0, uri.find_first_of("?"));
 	if (normalizeStr(_requestLine.filePath) < 0) {
+		cout << "NormalizeStr failed" << endl;
 		_noBodyResponseDriver(400, "", true);
 	}
 	_locationBlockForTheRequest = _configServer->get_location(_requestLine.filePath);

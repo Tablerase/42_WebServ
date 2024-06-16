@@ -15,6 +15,7 @@
 #include "utils.hpp"
 #include <cstddef>
 #include <cstdlib>
+#include <stdexcept>
 
 void Client::_generateContentExtension(string& path) {
 	path.erase(0, 1);
@@ -47,6 +48,11 @@ bool	Client::_checkExtensionMatch(const string& extension) {
 }
 
 void Client::_noBodyResponseDriver(const int status, const string& optionalBody, bool isFatal) {
+	if (status >= 500) {
+		throw runtime_error("coucou le s");
+	}
+	cout << "A error happends with request : " << _copyForDebug << endl;
+	cout << "Occured Error is : " << status << endl;
 	switch (status) {
 		case 201 :
 			_buildNoBodyResponse("201", " Created", "Data Successefully Uploaded", isFatal);
@@ -145,11 +151,11 @@ bool Client::_loadCustomStatusPage(string path) {
 
 void	Client::_fillResponse( string status, bool shouldClose ) {
 	cout << "In fill response" << endl;
-	// for (map<string, string>::iterator it = _headerFields.begin(); it != _headerFields.end(); ++it) {
-	// 	cout << "New Header : " << it->first << ":" << it->second << endl;
-	// }
+	for (map<string, string>::iterator it = _headerFields.begin(); it != _headerFields.end(); ++it) {
+		cout << "New Header : " << it->first << ":" << it->second << endl;
+	}
 	const map<string, string>::const_iterator it = _headerFields.find("connection");
-	if (it == _responseHeader.end()) {
+	if (it == _responseHeader.end() || _headerFields.size() == 0) {
 		shouldClose = true;
 	} else if (it->second.compare("keep-alive") != 0) {
 		shouldClose = true;
@@ -179,9 +185,12 @@ void	Client::_fillResponse( string status, bool shouldClose ) {
 
 void	Client::_sendAnswer( void ) {
 	const size_t writeValue = write(_connectionEntry, _response.str().c_str(), _response.str().size());
-	if (writeValue != _response.str().size() || _connectionShouldBeClosed == true) {
-		// cout << writeValue << "   " << _response.str().size() << boolalpha << _connectionShouldBeClosed << endl;
-		// cout << "gneuuuuu" << endl;
+	if (writeValue != _response.str().size()) {
+		cout << "Close bc of write bytes" << endl;
+		throw CloseMeException();
+	} else if (_connectionShouldBeClosed == true) {
+		cout << "Close bc of preceed error" << endl;
+		cout << _response.str() << endl;
 		throw CloseMeException();
 	}
 	_requestLine.cgiQuery.clear();

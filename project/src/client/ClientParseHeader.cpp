@@ -36,10 +36,10 @@ void	Client::_parseHeader( void ) {
 		}
 		field_content.erase(0, field_content.find_first_not_of(" "));
 		field_content.erase(field_content.find_last_not_of(" ") + 1, field_content.npos);
-		if (fieldContentHasForbiddenChar(field_content) == true) {
-			_noBodyResponseDriver(400, "", true);
-			return ;
-		}
+		// if (fieldContentHasForbiddenChar(field_content) == true) {
+		// 	_noBodyResponseDriver(400, "", true);
+		// 	return ;
+		// }
 		normalizeStr(field_content);
 		_checkHeaderValidity(std::pair<string, string>(field_value, field_content));
 		if (_responseIsReady == true) {
