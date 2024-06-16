@@ -14,6 +14,7 @@
 #include "Server.hpp"
 #include "color.h"
 #include <cstring>
+#include <dirent.h>
 #include <ios>
 #include <sys/stat.h>
 
@@ -109,6 +110,7 @@ void Client::_statFile(const char* path) {
 			_noBodyResponseDriver(404, "", false);
 			return ;
 		} else if (errno == ENOMEM) {
+			cout << "My error" << endl;
 			_noBodyResponseDriver(500, "", false);
 			return ;
 		} else {
@@ -137,6 +139,7 @@ void Client::_statFile(const char* path) {
 }
 
 void	Client::_processClassicGetRequest( string& extension ) {
+	cout << "Processing Classic get Request" << endl;
 	_generateContentExtension(extension);	
 	if (_checkExtensionMatch(extension) == false) {
 		string allowedContent = "Content-Type: " + extension;
@@ -151,7 +154,8 @@ void	Client::_processClassicGetRequest( string& extension ) {
 	toSend.open(_requestLine.absolutePath.c_str());
 	// cout << _requestLine.filePath << boolalpha << toSend.fail() << endl;
 	if (toSend.fail()) {
-			_noBodyResponseDriver(500, "", false);
+		cout << "toSendfailed" << endl;
+		_noBodyResponseDriver(500, "", false);
 	}
 	_bodyStream << toSend.rdbuf();
 	toSend.close();
@@ -205,16 +209,17 @@ void Client::_listDirectory( void ) {
 	stringstream size;
 	size << _bodyStream.str().size();
 	_responseHeader.insert(pair<string, string>("Content-Length: ", size.str()));
+	closedir(directoryPtr);
 	_fillResponse("200 OK", false);
 }
 
 void Client::_processClassicPostRequest( void ) {
-	_statFile(_requestLine.filePath.c_str());
+	_statFile(_requestLine.absolutePath.c_str());
 	if (_responseIsReady == true) {
 		return ;
 	}
 	ofstream out;	
-	out.open(_requestLine.filePath.c_str());
+	out.open(_requestLine.absolutePath.c_str());
 	if (out.fail()) {
 			_noBodyResponseDriver(500, "", false);
 	} else {
@@ -225,13 +230,13 @@ void Client::_processClassicPostRequest( void ) {
 }
 
 void	Client::_manageDeleteRequest( void ) {
-	_statFile(_requestLine.filePath.c_str());
+	_statFile(_requestLine.absolutePath.c_str());
 	if (_responseIsReady == true) {
 		return ;
 	}
-	if (remove(_requestLine.filePath.c_str()) != 0) {
-			_noBodyResponseDriver(500, "", false);
+	if (remove(_requestLine.absolutePath.c_str()) != 0) {
+		_noBodyResponseDriver(500, "", false);
 	} else {
-			_noBodyResponseDriver(204, "", false);
+		_noBodyResponseDriver(204, "", false);
 	}
 }

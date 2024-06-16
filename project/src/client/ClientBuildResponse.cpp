@@ -52,8 +52,8 @@ bool	Client::_checkExtensionMatch(const string& extension) {
 }
 
 void Client::_noBodyResponseDriver(const int status, const string& optionalBody, bool isFatal) {
-	cout << "A error happends with request : " << _copyForDebug << endl;
-	cout << "Occured Error is : " << status << endl;
+	// cout << "A error happends with request : " << _copyForDebug << endl;
+	// cout << "Occured Error is : " << status << endl;
 	switch (status) {
 		case 201 :
 			_buildNoBodyResponse("201", " Created", "Data Successefully Uploaded", isFatal);
@@ -171,7 +171,7 @@ void	Client::_fillResponse( string status, bool shouldClose ) {
 	const map<string, string>::const_iterator it = _headerFields.find("connection");
 	if (it == _responseHeader.end() || _headerFields.size() == 0) {
 		shouldClose = true;
-	} else if (it->second.compare("keep-alive") != 0) {
+	} else if (shouldClose != true && it->second.compare("keep-alive") != 0) {
 		shouldClose = true;
 	}
 	if (_responseHeader.find("Connection") == _responseHeader.end()) {
