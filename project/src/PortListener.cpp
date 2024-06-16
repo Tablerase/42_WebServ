@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "color.h"
 #include "utils.hpp"
 #include "PortListener.hpp"
 #include <EventLoop.hpp>
@@ -198,15 +199,18 @@ Server*	PortListener::getServer(const string& name) {
 }
 
 void PortListener::getTimeout(void) {
-	time_t current;
-
-	time(&current);
+	vector<int> toBeClosed;
+	cout << RED << "I'm PortListener " << this->getListeningPort() << " and i manage " << _clientMap.size() << " clients" << RESET << endl;
 	for (map<int, Client*>::iterator it = _clientMap.begin();
 			it != _clientMap.end(); ++it) {
 		if (it->second->isCLientTimeout() == true) {	
-			_closeConnection(it->first);
+			toBeClosed.push_back(it->first);
 		}
 	}
+	for (vector<int>::iterator it = toBeClosed.begin(); it != toBeClosed.end(); ++it) {
+		_closeConnection(*it);
+	}
+	return ;
 }
 
 void PortListener::addServerToMap(Server & new_server) {

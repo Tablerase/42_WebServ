@@ -38,7 +38,7 @@ bool	Client::_checkExtensionMatch(const string& extension) {
 			return true;
 		}
 	}
-	cout << it->second << endl;
+	// cout << it->second << endl;
 	if (it->second.find("*/*") != it->second.npos || it->second.find(extension) != it->second.npos) {
 		return true;
 	} else {
@@ -145,8 +145,13 @@ bool Client::_loadCustomStatusPage(string path) {
 
 void	Client::_fillResponse( string status, bool shouldClose ) {
 	cout << "In fill response" << endl;
+	// for (map<string, string>::iterator it = _headerFields.begin(); it != _headerFields.end(); ++it) {
+	// 	cout << "New Header : " << it->first << ":" << it->second << endl;
+	// }
 	const map<string, string>::const_iterator it = _headerFields.find("connection");
-	if (it == _responseHeader.end() || it->second.compare("Keep-Alive") != 0) {
+	if (it == _responseHeader.end()) {
+		shouldClose = true;
+	} else if (it->second.compare("keep-alive") != 0) {
 		shouldClose = true;
 	}
 	if (_responseHeader.find("Connection") == _responseHeader.end()) {
@@ -173,11 +178,10 @@ void	Client::_fillResponse( string status, bool shouldClose ) {
 }
 
 void	Client::_sendAnswer( void ) {
-	cout << "The response I'm about to send : " << _response.str();
 	const size_t writeValue = write(_connectionEntry, _response.str().c_str(), _response.str().size());
 	if (writeValue != _response.str().size() || _connectionShouldBeClosed == true) {
-		cout << writeValue << "   " << _response.str().size() << boolalpha << _connectionShouldBeClosed << endl;
-		cout << "gneuuuuu" << endl;
+		// cout << writeValue << "   " << _response.str().size() << boolalpha << _connectionShouldBeClosed << endl;
+		// cout << "gneuuuuu" << endl;
 		throw CloseMeException();
 	}
 	_requestLine.cgiQuery.clear();

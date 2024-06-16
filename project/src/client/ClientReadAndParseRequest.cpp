@@ -21,14 +21,15 @@ void	Client::_readRequest( void ) {
 	_status = READING;
 	_singleReadBytes = read(_connectionEntry, _buffer, BUFFER_SIZE);	
 	if (_singleReadBytes <= 0) {
+		// cout << "Failed read " << "Red bytes : " << _singleReadBytes << endl;
 		throw CloseMeException();
 	}
 	const string request(_buffer, _singleReadBytes);
 	memset(_buffer, 0, _singleReadBytes);
 	if (_headerIsFullyRed == false) {
-		cout << request << endl;
+		// cout << request << endl;
 		const size_t endOfHeader = request.find("\r\n\r\n");
-		cout << endOfHeader << endl;
+		// cout << endOfHeader << endl;
 		if (endOfHeader == request.npos) {
 			_header += request;
 			thisReadAsBeenHandled = true;

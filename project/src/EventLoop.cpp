@@ -109,18 +109,17 @@ int EventLoop::loopForEvent( void ) {
 			cout << "Fatal Error with Epoll :"; 
 			throw runtime_error(strerror(errno));
 		}
-		else if (received_events == 0) {
-			continue ;
-		}
-		for (int i = 0; i < received_events; ++i) {
-			try {
-				_getOwner(_eventManager[i].data.fd)->manageEvent(_eventManager[i].data.fd);
-			} catch (Client::ChildIsExiting& e) {
-				cerr << e.what() << endl;
-				return (1);
+		else if (received_events != 0) {
+			for (int i = 0; i < received_events; ++i) {
+				try {
+					_getOwner(_eventManager[i].data.fd)->manageEvent(_eventManager[i].data.fd);
+				} catch (Client::ChildIsExiting& e) {
+					cerr << e.what() << endl;
+					return (1);
+				}
 			}
-			_checkTimeouts();
 		}
+		_checkTimeouts();
 	}
 	return (0);
 }
