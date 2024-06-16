@@ -85,6 +85,7 @@ class Client {
 		void				_generateContentExtension(string& path);
 		void				_statFile(const char* path);
 		inline bool	_indexFileExist( const string path);
+		inline bool	_requestIsDir( const string path);
 		
 		// ClientParseHeader.cpp
 		void	_parseHeader( void );

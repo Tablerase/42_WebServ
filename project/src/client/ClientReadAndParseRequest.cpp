@@ -13,6 +13,7 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "utils.hpp"
+#include <algorithm>
 #include <string>
 #include <sys/socket.h>
 
@@ -119,6 +120,11 @@ void	Client::_parseRequestLine( const string& requestLine) {
 	} _parseUri(uri);
 	if (_responseIsReady == true) {
 		return ;
+	}
+	if (find(_locationBlockForTheRequest->limit_except_.begin(),
+				_locationBlockForTheRequest->limit_except_.end(), _requestLine.method)
+			== _locationBlockForTheRequest->limit_except_.end()) {	
+		_noBodyResponseDriver(405, "", true);
 	}
 }
 

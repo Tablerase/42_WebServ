@@ -75,6 +75,9 @@ void Client::_noBodyResponseDriver(const int status, const string& optionalBody,
 		case 404 :
 			_buildNoBodyResponse("404", " Not Found", "Oops ! It seems there's nothing available here ...", isFatal);
 			break ;
+		case 405 :
+			_buildNoBodyResponse("405", " Method Not Allowed", "Method is not allowed for the route", isFatal);
+			break ;
 		case 406 :
 			_buildNoBodyResponse("406", " Not Acceptable", optionalBody, isFatal);
 			break ;

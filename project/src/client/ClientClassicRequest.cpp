@@ -15,6 +15,7 @@
 #include "color.h"
 #include <cstring>
 #include <ios>
+#include <sys/stat.h>
 
 void Client::_managePostRequest( void ) {
 	if (*(_requestLine.absolutePath.end() - 1) == '/') {
@@ -51,9 +52,20 @@ inline bool	Client::_indexFileExist( const string path) {
 	} return false;
 }
 
+inline bool	Client::_requestIsDir( const string path) {
+	cout << "stating indec" << endl;
+	struct stat	buffer;
+	const int ret = stat(path.c_str(), &buffer);
+	if (ret != 0) {
+		cout << "stat succed" << endl;
+		return false;
+	}
+	return (S_ISDIR(buffer.st_mode));
+}
+
 void	Client::_manageGetRequest( void ) {
 	// cout << "The request is :" << _requestLine.filePath << endl;
-	if (*(_requestLine.filePath.end() - 1) == '/') {
+	if (_requestIsDir(_requestLine.absolutePath) == true) {
 		cout << "I got a request ending with a /" << endl;
 		string	index = _locationBlockForTheRequest->index_;
 		if (index == "") {
@@ -159,23 +171,34 @@ void Client::_listDirectory( void ) {
 		return ;
 	}	
 	_bodyStream << "<!DOCTYPE html><html><head><title> Listing of ";
+	_bodyStream << _requestLine.filePath << " </title></head><body><p>Content : </p><ul>";
 	_requestLine.filePath.erase(_requestLine.filePath.end() - 1);
-	_bodyStream << _requestLine.filePath.substr(_requestLine.filePath.find_last_of('/'),
-			_requestLine.filePath.npos) << " </title></head><body><p>Content : </p><ul>";
 	for (struct dirent* dirEntry = readdir(directoryPtr);
 			dirEntry != NULL; dirEntry = readdir(directoryPtr)) {
 		if (dirEntry->d_name[0] == '.') {
+			if (strlen(dirEntry->d_name) == 2 && dirEntry->d_name[1] == '.') {
+				string pDir = _requestLine.absolutePath;
+				if (*(pDir.end() - 1) == '/') {
+					pDir.erase(pDir.find_last_of('/'), pDir.npos);
+				} pDir.erase(pDir.find_last_of('/'), pDir.npos);
+				if (pDir.size() >= _locationBlockForTheRequest->root_.size()) {
+					pDir.erase(0, _locationBlockForTheRequest->root_.size());
+					_bodyStream << "<li><a href=\"" << pDir << "/\"> ";
+					_bodyStream << "..</a></li>";
+				}
+			}
 			continue;
+		} else {
+			_bodyStream << "<li><a href=\"" << _requestLine.filePath << "/" << dirEntry->d_name;
+			if (dirEntry->d_type == DT_DIR) {
+				_bodyStream << "/";
+			}
+			_bodyStream << "\"> " << dirEntry->d_name;
+			if (dirEntry->d_type == DT_DIR) {
+				_bodyStream << "/";
+			}
+			_bodyStream << "</a></li>";
 		}
-		_bodyStream << "<li><a href=\"" << _requestLine.filePath << "/" << dirEntry->d_name;
-		if (dirEntry->d_type == DT_DIR) {
-			_bodyStream << "/";
-		}
-		_bodyStream << "\"> " << dirEntry->d_name;
-		if (dirEntry->d_type == DT_DIR) {
-			_bodyStream << "/";
-		}
-		_bodyStream << "</a></li>";
 	}
 	_bodyStream << "</ul></body></html>";
 	_responseHeader.insert(pair<string, string>("Content-type: ", "text/html"));

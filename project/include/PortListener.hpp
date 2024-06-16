@@ -66,6 +66,7 @@ class PortListener {
 		EventLoop*						_mainEventLoop;
 		string								_listeningPort;
 		struct addrinfo*			_address;
+		struct addrinfo*			_fullList;
 };
 
 ostream & operator<<(ostream & os, PortListener & listener);

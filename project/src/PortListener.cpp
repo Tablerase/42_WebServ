@@ -21,6 +21,7 @@
 #include <stdexcept>
 
 PortListener::PortListener( void ) {
+	_fullList = NULL;
 	return;
 }
 
@@ -28,6 +29,9 @@ PortListener::~PortListener( void ) {
 	for(map<int, Client *>::iterator it = _clientMap.begin();
 			it != _clientMap.end(); ++it) {
 		delete it->second;
+	}
+	if (_fullList != NULL) {
+		freeaddrinfo(_fullList);
 	}
 	return ;
 }
@@ -62,8 +66,7 @@ void PortListener::initSocket( void ) {
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 
-	struct addrinfo	*res;
-	int	gai_error = getaddrinfo(NULL, _listeningPort.c_str(), &hints, &res);
+	int	gai_error = getaddrinfo(NULL, _listeningPort.c_str(), &hints, &_fullList);
 
 	if (gai_error != 0) {
 		throw runtime_error(gai_strerror(gai_error));
@@ -74,14 +77,14 @@ void PortListener::initSocket( void ) {
 	setsockopt(_socketFd, SOL_SOCKET, SO_REUSEADDR, &reUse, sizeof(reUse));
 
 	// Assign the socket to the address and port we define with the structure.
-	for (_address = res; _address != NULL; _address = _address->ai_next) {
+	for (_address = _fullList; _address != NULL; _address = _address->ai_next) {
 		if (bind(_socketFd, _address->ai_addr, _address->ai_addrlen) == 0) {
 			break;
 		}
 	}
 	if (_address == NULL) {
-		freeaddrinfo(res);
-		res = NULL;
+		freeaddrinfo(_fullList);
+		_fullList = NULL;
 		close(_socketFd);
 		throw runtime_error(strerror(errno));
 	}
@@ -90,6 +93,7 @@ void PortListener::initSocket( void ) {
 	if (listen(_socketFd, 4096) < 0) {
 		throw runtime_error(strerror(errno));
 		close(_socketFd);
+		freeaddrinfo(_fullList);
 		return;
 	}	
 }

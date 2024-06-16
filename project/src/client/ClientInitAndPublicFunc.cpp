@@ -15,7 +15,7 @@
 #include <ctime>
 
 Client::Client(int fd, PortListener& owner, EventLoop& eventLoop): _owner(owner)
-	 ,_mainEventLoop(eventLoop), _connectionEntry(fd), _lastInteractionTime(time(NULL)){
+	 ,_mainEventLoop(eventLoop), _connectionEntry(fd) {
 	memset(_buffer, 0, BUFFER_SIZE);
 	_requestLine.protocol = 0.;
 	_status = IDLE;
@@ -28,9 +28,11 @@ Client::Client(int fd, PortListener& owner, EventLoop& eventLoop): _owner(owner)
 	_requestIsChunked = false;
 	_contentLength = 0;
 	_requestIsHandledByCgi = false;
+	_cgiIsRunning = false;
 	_cgiBinPath = "";
 	_locationBlockForTheRequest = NULL;
 	_configServer = NULL;
+	_lastInteractionTime = time(NULL);
 	return ;
 }
 
