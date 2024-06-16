@@ -15,7 +15,6 @@
 #include "utils.hpp"
 #include <cstddef>
 #include <cstdlib>
-#include <stdexcept>
 
 void Client::_generateContentExtension(string& path) {
 	path.erase(0, 1);
@@ -45,7 +44,6 @@ bool	Client::_checkExtensionMatch(const string& extension) {
 			return true;
 		}
 	}
-	// cout << it->second << endl;
 	if (it->second.find("*/*") != it->second.npos || it->second.find(extension) != it->second.npos) {
 		return true;
 	} else {
@@ -54,9 +52,6 @@ bool	Client::_checkExtensionMatch(const string& extension) {
 }
 
 void Client::_noBodyResponseDriver(const int status, const string& optionalBody, bool isFatal) {
-	// if (status >= 500) {
-	// 	throw runtime_error("coucou le s");
-	// }
 	cout << "A error happends with request : " << _copyForDebug << endl;
 	cout << "Occured Error is : " << status << endl;
 	switch (status) {
@@ -65,6 +60,9 @@ void Client::_noBodyResponseDriver(const int status, const string& optionalBody,
 			break ;
 		case 204 :
 			_buildNoBodyResponse("204", " No content", "No content to display", isFatal);
+			break ;
+		case 307 :
+			_buildNoBodyResponse("307", " Temporary Redirect", "", isFatal);
 			break ;
 		case 400 :
 			_buildNoBodyResponse("400", " BadRequest", "Syntax error or ambiguous request", isFatal);

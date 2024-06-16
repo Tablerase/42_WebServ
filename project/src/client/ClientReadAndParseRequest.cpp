@@ -126,6 +126,10 @@ void	Client::_parseRequestLine( const string& requestLine) {
 			== _locationBlockForTheRequest->limit_except_.end()) {	
 		_noBodyResponseDriver(405, "", true);
 	}
+	if (_locationBlockForTheRequest->redirect_ == true) {
+		_responseHeader.insert(pair<string, string>("Location: ", _locationBlockForTheRequest->redirect_path_));
+		_noBodyResponseDriver(307, "", true);
+	}
 }
 
 void Client::_parseMethod(const string& method) {
