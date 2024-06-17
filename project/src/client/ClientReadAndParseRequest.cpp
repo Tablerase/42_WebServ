@@ -97,6 +97,7 @@ void	Client::_parseRequest( void ) {
 	if (_responseIsReady == true) {
 		return ;
 	}
+	_checkForReferer();
 	_checkForChunkedRequest();
 	_checkContentLength();
 	if (_requestIsChunked == true || _contentLength > 0) {
@@ -105,7 +106,27 @@ void	Client::_parseRequest( void ) {
 	return ;
 }
 
+void	Client::_checkForReferer( void ) {
+	map<string, string>::iterator it = _headerFields.find("referer");
+	if (it != _headerFields.end()) {
+		if (it->second.find("://") == it->second.npos) {
+			return ;
+		}
+		string referer = it->second.substr(it->second.find("://") + 3, it->second.npos);
+		cout << "Referer : " << referer << endl;
+		if (referer.find_first_of("/") == referer.npos) {
+			return ;
+		}
+		referer.erase(0, referer.find_first_of("/"));
+		_buildAbsolutePath(referer);
+	}
+}
+
 void	Client::_parseRequestLine( const string& requestLine) {
+	if (requestLine.find_first_of(" ") == requestLine.npos
+			|| requestLine.find_first_of(" ") == requestLine.find_last_of(" ")) {
+		_noBodyResponseDriver(400, "", true);
+	}
 	const string	method = requestLine.substr(0, requestLine.find_first_of(" "));
 	string	uri = requestLine.substr(requestLine.find_first_of(" ") + 1, requestLine.npos);
 	uri.erase(uri.find_first_of(" "), uri.npos);
@@ -130,7 +151,6 @@ void	Client::_parseRequestLine( const string& requestLine) {
 		_responseHeader.insert(pair<string, string>("Location: ", _locationBlockForTheRequest->redirect_path_));
 		_noBodyResponseDriver(307, "", true);
 	}
-	cout << "||||||" << _locationBlockForTheRequest->root_ << "|||||" << endl;
 }
 
 void Client::_parseMethod(const string& method) {
@@ -162,15 +182,9 @@ void Client::_parseUri(const string& uri) {
 		_requestLine.filePath = uri;
 	}
 	if (normalizeStr(_requestLine.filePath) < 0) {
-		cout << "NormalizeStr failed" << endl;
 		_noBodyResponseDriver(400, "", true);
 	}
-	_locationBlockForTheRequest = _configServer->get_location(_requestLine.filePath);
-	string	rootOfLocation(_locationBlockForTheRequest->root_);
-	if (*(rootOfLocation.end() - 1) == '/') {
-		rootOfLocation.erase(rootOfLocation.size() - 1, rootOfLocation.npos);
-	}
-	_requestLine.absolutePath = rootOfLocation + _requestLine.filePath;
+	_buildAbsolutePath(_requestLine.filePath);
 }
 
 void Client::_parseProtocol(const string& protocol) {
@@ -194,4 +208,14 @@ void Client::_parseProtocol(const string& protocol) {
 	} else {
 		_requestLine.protocol = version;
 	} return ;
+}
+
+void	Client::_buildAbsolutePath(const string& locPath) {
+	_locationBlockForTheRequest = _configServer->get_location(locPath);
+	string	rootOfLocation(_locationBlockForTheRequest->root_);
+	if (*(rootOfLocation.end() - 1) == '/') {
+		rootOfLocation.erase(rootOfLocation.size() - 1, rootOfLocation.npos);
+	}
+	_requestLine.absolutePath = rootOfLocation + _requestLine.filePath;
+
 }

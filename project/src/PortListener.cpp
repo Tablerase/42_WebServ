@@ -141,7 +141,7 @@ void PortListener::_writeMinimalAnswer( int fd, string status,
 	response << "Connection: close\r\n\r\n";
 	response << messageBody;
 	_immediateResponse.insert(pair<int, string>(fd, response.str()));
-	_mainEventLoop->addFdOfInterest(fd, this, EPOLLOUT);
+	_mainEventLoop->modifyFdOfInterest(fd, EPOLLOUT);
 }
 
 void	PortListener::_closeConnection(int fd) {

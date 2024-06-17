@@ -19,7 +19,7 @@
 # include <vector>
 
 # define MAX_EVENTS 1
-# define WAIT_TIMEOUT 100
+# define WAIT_TIMEOUT 500
 
 using namespace std;
 

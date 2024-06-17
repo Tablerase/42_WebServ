@@ -71,6 +71,8 @@ class Client {
 		void				_parseMethod( const string& method);
 		void 				_parseUri( const string& uri);
 		void				_parseProtocol( const string& protocol);
+		void				_checkForReferer( void );
+		void				_buildAbsolutePath(const string& locPath);
 		void				_manageDeleteRequest( void );
 		void				_manageGetRequest( void );
 		void				_managePostRequest( void );
