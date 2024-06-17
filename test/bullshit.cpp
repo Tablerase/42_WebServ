@@ -19,13 +19,10 @@ using namespace std;
 
 
 int main(int ac, char **av, char **envp) {
-	int status;
-	pid_t pid = fork();
-	if (pid == 0) {
-		execve(av[1], av + 1, envp);	
-		return 1;
-	} else {
-		waitpid(pid, &status, 0);
+	string p = "coucou/abc/";
+	if (p.find_last_of("/") != p.size() - 1) {
+		p += "/";
 	}
-	cout << WIFEXITED(status) << endl;
+	cout << p << endl;
+	cout << p.rfind("coucou");
 }

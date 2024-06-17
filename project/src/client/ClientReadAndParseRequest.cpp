@@ -56,8 +56,11 @@ void	Client::_readRequest( void ) {
 		} else if (_requestIsChunked == true) {
 			_parseChunkedRequest(request.substr(bodyStart, request.npos));
 		} else {
+			if (request.find("\r\n", bodyStart) == bodyStart) {
+				bodyStart += 2;
+			}
 			_body += request.substr(bodyStart, request.npos);
-			if (_body.size() > _contentLength + 2) {
+			if (_body.size() > _contentLength) {
 				_noBodyResponseDriver(400, "", true);
 			} else if (_body.size() == _contentLength) {
 				_bodyIsFullyRed = true;

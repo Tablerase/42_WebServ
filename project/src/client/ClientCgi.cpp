@@ -41,6 +41,7 @@ void	Client::_cgiInit( void ) {
 	} else if (_cgiScriptPid == 0) {
 		_childrenRoutine();
 	} else {
+		_mainEventLoop.modifyFdOfInterest(_connectionEntry, EPOLLOUT);
 		_cgiIsRunning = true;
 		return ;
 	}
@@ -127,11 +128,15 @@ void	Client::_manageCgiOutfile( void ) {
 }
 
 void	Client::_killCgi( void ) {
-	kill(_cgiScriptPid, 9);
+	kill(_cgiScriptPid, 2);
 	if (waitpid(_cgiScriptPid, NULL, 0) < 0) {
 		_noBodyResponseDriver(500, "", false);
 	}
 	_noBodyResponseDriver(504, "", false);
+	_cgiIsRunning = false;
+	_responseIsReady = true;
+	_connectionShouldBeClosed = false;
+	_status = WRITING;
 }
 
 void	Client::_checkCgiStatus( void ) {
@@ -139,8 +144,6 @@ void	Client::_checkCgiStatus( void ) {
 	if (waitpid(_cgiScriptPid, &status, WNOHANG) <= 0) {
 		return ;
 	} else if (WIFEXITED(status) != true || WEXITSTATUS(status) != 0){
-		// _cgiInfilePath = "";
-		// _cgiOutFilePath = "";
 		_noBodyResponseDriver(500, "", false);
 	} else {
 		_readOutfile();
@@ -149,7 +152,7 @@ void	Client::_checkCgiStatus( void ) {
 	_responseIsReady = true;
 	_connectionShouldBeClosed = false;
 	_status = WRITING;
-	_mainEventLoop.modifyFdOfInterest(_connectionEntry, EPOLLOUT);
+	// _mainEventLoop.modifyFdOfInterest(_connectionEntry, EPOLLOUT);
 	return ;
 }
 

@@ -13,7 +13,6 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "utils.hpp"
-#include <complex>
 
 void	Client::_parseHeader( void ) {
 	string header_line, field_value, field_content;
@@ -94,6 +93,10 @@ void Client::_parseChunkedRequest(string requestPart) {
 	size_t	num_size;
 	char		*endptr;
 	cout << "ENtering Chunk Parsing With Request : " << requestPart << endl;
+	cout << "beg of part request : " << requestPart.size() << endl;
+	if (requestPart.find("\r\n") == 0) {
+		requestPart.erase(0, 2);
+	}
 	while (requestPart.size() != 0) {
 		chunk_size = requestPart.substr(0, requestPart.find("\r\n"));
 		cout << "Chunk Size: " << chunk_size << endl;
@@ -133,8 +136,14 @@ void Client::_parseChunkedRequest(string requestPart) {
 		}
 		_body += chunk_content;
 		requestPart.erase(0, num_size + 2);
-		cout << "End of a loop cycle, remaining reauest part : " << requestPart << endl;
+		if (requestPart.find("\r\n") != 0) {
+			cout << "Found cr = " << requestPart.find("\r\n") << endl;
+			_noBodyResponseDriver(400, "", true);
+			break;
+		}
+		cout << "End of a loop cycle, remaining reauest part : " << requestPart.size() << endl;
 		cout << "And Body is currently : " << _body;
 	}
+	cout << "End of part request : " << requestPart.size() << endl;
 	return ;
 }

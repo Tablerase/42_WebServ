@@ -50,21 +50,21 @@ bool	Client::isCLientTimeout( void ) {
 	bool	ret = false;
 
 	if (timeSinceLastAction >= TIMEOUT) {
-		if (_cgiIsRunning == false) {
-			ret = true;
-		} else {
+		if (_cgiIsRunning == true) {
 			_killCgi();
 			_lastInteractionTime = time(NULL);
-		}
-	} else {
-		if (_cgiIsRunning == true) {
-			_checkCgiStatus();
+		} else {
+			ret = true;
 		}
 	}
 	return (ret);
 }
 
 void Client::manageNewEvent( void ) {
+	if (_cgiIsRunning == true) {
+		_checkCgiStatus();
+		return ;
+	}
 	if (_responseIsReady == true) {
 		_sendAnswer();
 	} else {
