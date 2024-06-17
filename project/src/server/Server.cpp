@@ -67,7 +67,14 @@ location const *Server::get_location(std::string const &path) const {
     return &(this->locations_.at(path));
   }
   catch (std::out_of_range &oor) {
-    return &(this->locations_.at("/"));
+		string old_cpy = path;
+		if (old_cpy.find_last_of("/") == old_cpy.size() - 1 &&
+				old_cpy.size() > 1) {
+			old_cpy.erase(old_cpy.size() - 1, old_cpy.npos);
+		}
+		string new_path = old_cpy.substr(0, old_cpy.find_last_of("/") + 1);
+		cout << "New Path : " << new_path << endl;
+    return get_location(new_path);
   }
 }
 

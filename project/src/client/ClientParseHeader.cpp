@@ -124,7 +124,7 @@ void Client::_parseChunkedRequest(string requestPart) {
 				break ;
 			}
 		}
-		chunk_content = requestPart.substr(0, requestPart.find("\r\n"));
+		chunk_content = requestPart.substr(0, num_size);
 		if (chunk_content.size() != num_size) {
 			cout << "I failed right there because chunk_content size is : " << chunk_content.size() << " and num size is : " << num_size << endl;
 			cout << "Chunk Content :" << chunk_content << endl;

@@ -127,7 +127,12 @@ void Client::_buildNoBodyResponse(string status, string info, string body, bool 
 		stringstream size;
 		size << _bodyStream.str().size();
 		_responseHeader.insert(pair<string, string>("Content-length: ", size.str()));
-		_responseHeader.insert(pair<string, string>("Content-type: ", "text/html"));
+		if (_responseHeader.find("Content-type: ") != _responseHeader.end()
+				&& _responseHeader.size() != 0) {
+			_responseHeader.find("Content-type: ")->second = "text/html";
+		} else {
+			_responseHeader.insert(pair<string, string>("Content-type: ", "text/html"));
+		}
 	}
 	_responseHeader.insert(pair<string, string>("Date: ", getDate()));
 	_fillResponse(status + info, isFatal);

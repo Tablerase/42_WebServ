@@ -116,8 +116,10 @@ void Client::_statFile(const char* path) {
 		} else if (errno == ENOENT) {
 			_noBodyResponseDriver(404, "", false);
 			return ;
+		} else if (errno == ENOTDIR) {
+			_noBodyResponseDriver(409, "", false);
+			return ;
 		} else if (errno == ENOMEM) {
-			cout << "My error" << endl;
 			_noBodyResponseDriver(500, "", false);
 			return ;
 		} else {
@@ -150,11 +152,13 @@ void	Client::_processClassicGetRequest( string& extension ) {
 	_generateContentExtension(extension);	
 	if (_checkExtensionMatch(extension) == false) {
 		string allowedContent = "Content-Type: " + extension;
+			cout << "alloed failed" << endl;
 			_noBodyResponseDriver(406, allowedContent, true);
 		return ;
 	} 
 	_statFile(_requestLine.absolutePath.c_str());
 	if (_responseIsReady == true) {
+		cout << "Stat failed" << endl;
 		return ;
 	}
 	ifstream toSend;
@@ -194,6 +198,10 @@ void Client::_listDirectory( void ) {
 				} pDir.erase(pDir.find_last_of('/'), pDir.npos);
 				if (pDir.size() >= _locationBlockForTheRequest->root_.size()) {
 					pDir.erase(0, _locationBlockForTheRequest->root_.size());
+					cout << "pDir : " << pDir << endl;
+					if (pDir[0] != '/' && pDir.size() != 0) {
+						pDir.insert(0, "/");
+					}
 					_bodyStream << "<li><a href=\"" << pDir << "/\"> ";
 					_bodyStream << "..</a></li>";
 				}

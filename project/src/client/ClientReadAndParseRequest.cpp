@@ -97,7 +97,7 @@ void	Client::_parseRequest( void ) {
 	if (_responseIsReady == true) {
 		return ;
 	}
-	_checkForReferer();
+	// _checkForReferer();
 	_checkForChunkedRequest();
 	_checkContentLength();
 	if (_requestIsChunked == true || _contentLength > 0) {
@@ -117,8 +117,21 @@ void	Client::_checkForReferer( void ) {
 		if (referer.find_first_of("/") == referer.npos) {
 			return ;
 		}
-		referer.erase(0, referer.find_first_of("/"));
+		// referer.erase(0, referer.find_first_of("/"));
 		_buildAbsolutePath(referer);
+		// string fileName = _requestLine.absolutePath;
+		// int isDir = 0;
+		// if (fileName.find_last_of("/") == fileName.size() - 1) {
+		// 	fileName.erase(fileName.size() - 1, fileName.npos);
+		// 	++isDir;
+		// }
+		// cout <<  "FilName before erasing : " << fileName << endl;
+		// fileName.erase(0, fileName.find_last_of("/"));
+		// if (_requestLine.absolutePath.find(fileName) != _requestLine.absolutePath.rfind(fileName)) {
+		// 	_requestLine.absolutePath.erase(_requestLine.absolutePath.find(fileName) + fileName.size() + 1, _requestLine.absolutePath.npos);
+		// }
+		// cout << _requestLine.absolutePath.find(fileName) << "  " << _requestLine.absolutePath.rfind(fileName) << "  " << fileName << endl;
+		// cout << "New Absolute Path : " << _requestLine.absolutePath << endl;
 	}
 }
 
@@ -212,10 +225,12 @@ void Client::_parseProtocol(const string& protocol) {
 
 void	Client::_buildAbsolutePath(const string& locPath) {
 	_locationBlockForTheRequest = _configServer->get_location(locPath);
+	cout << "Location block : " << _locationBlockForTheRequest->root_ << endl;
 	string	rootOfLocation(_locationBlockForTheRequest->root_);
 	if (*(rootOfLocation.end() - 1) == '/') {
 		rootOfLocation.erase(rootOfLocation.size() - 1, rootOfLocation.npos);
 	}
 	_requestLine.absolutePath = rootOfLocation + _requestLine.filePath;
+	cout << "abs : " << _requestLine.absolutePath << endl;
 
 }
