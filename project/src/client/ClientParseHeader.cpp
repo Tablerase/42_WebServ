@@ -6,7 +6,7 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/12 13:07:16 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/14 19:55:52 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/17 17:14:47 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ void	Client::_parseHeader( void ) {
 		}
 		field_content.erase(0, field_content.find_first_not_of(" "));
 		field_content.erase(field_content.find_last_not_of(" ") + 1, field_content.npos);
-		normalizeStr(field_content);
+		// normalizeStr(field_content);
 		_checkHeaderValidity(std::pair<string, string>(field_value, field_content));
 		if (_responseIsReady == true) {
 			break;
