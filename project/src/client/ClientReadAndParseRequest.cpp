@@ -155,8 +155,12 @@ void Client::_parseUri(const string& uri) {
 	if (uri.size() > MAX_URI_SIZE) {
 		_noBodyResponseDriver(414, "", true);
 	}
-	_requestLine.cgiQuery = uri.substr(uri.find_first_of("?") + 1, uri.npos);
-	_requestLine.filePath = uri.substr(0, uri.find_first_of("?"));
+	if (uri.find("?") != uri.npos) {
+		_requestLine.cgiQuery = uri.substr(uri.find_first_of("?") + 1, uri.npos);
+		_requestLine.filePath = uri.substr(0, uri.find_first_of("?"));
+	} else {
+		_requestLine.filePath = uri;
+	}
 	if (normalizeStr(_requestLine.filePath) < 0) {
 		cout << "NormalizeStr failed" << endl;
 		_noBodyResponseDriver(400, "", true);

@@ -67,15 +67,15 @@ void	Client::_childrenRoutine() {
 void	Client::_buildEnv() {
 	_env.push_back("DOCUMENT_ROOT=" + _locationBlockForTheRequest->root_);
 	if (_headerFields.find("cookie") != _headerFields.end()) {
-		_env.push_back("HTTP_COOKIE" + _headerFields.find("cookie")->second);
+		_env.push_back("HTTP_COOKIE=" + _headerFields.find("cookie")->second);
 	}
 	if (_headerFields.find("user-agent") != _headerFields.end()) {
-		_env.push_back("HTTP_USER_AGENT" + _headerFields.find("user-agent")->second);
+		_env.push_back("HTTP_USER_AGENT=" + _headerFields.find("user-agent")->second);
 	}
 	if (_headerFields.find("accept") != _headerFields.end()) {
-		_env.push_back("HTTP_ACCEPT" + _headerFields.find("accept")->second);
+		_env.push_back("HTTP_ACCEPT=" + _headerFields.find("accept")->second);
 	}
-	_env.push_back("REQUEST_METHOD" + _requestLine.method);
+	_env.push_back("REQUEST_METHOD=" + _requestLine.method);
 	_env.push_back("SERVER_SOFTWARE=WebServ/0.1312");
 	_env.push_back("SERVER_NAME=" + _configServer->get_name());
 	_env.push_back("SERVER_PROTOCOL=HTTP/1.1");
@@ -83,7 +83,7 @@ void	Client::_buildEnv() {
 	if (_requestLine.method == "POST") {
 		_env.push_back("CONTENT_LENGTH=" + _infileSize);
 		if (_headerFields.find("content-type") != _headerFields.end()) {
-			_env.push_back("CONTENT_TYPE" + _headerFields.find("content-type")->second);
+			_env.push_back("CONTENT_TYPE=" + _headerFields.find("content-type")->second);
 		} else {
 			_env.push_back("CONTENT_TYPE=text/plain");
 		}
@@ -115,7 +115,7 @@ void	Client::_manageBodyForCgi( void ) {
 void	Client::_manageCgiOutfile( void ) {
 	const string file = _cgiOutFilePath;
 	cout << "Trying to create " << file << endl;
-	const int fd = open(file.c_str(), O_CREAT, O_RDWR);
+	const int fd = open(file.c_str(), O_CREAT | O_RDWR, 00244 | 00400);
 	if (fd < 0) {
 		cout << "Outfile Failed" << endl;
 		throw ChildIsExiting();
@@ -145,6 +145,7 @@ void	Client::_checkCgiStatus( void ) {
 	} else {
 		_readOutfile();
 	}
+	_cgiIsRunning = false;
 	_responseIsReady = true;
 	_connectionShouldBeClosed = false;
 	_status = WRITING;
@@ -153,7 +154,7 @@ void	Client::_checkCgiStatus( void ) {
 }
 
 void	Client::_readOutfile( void ) {
-	_statFile(_requestLine.filePath.c_str());
+	_statFile(_cgiOutFilePath.c_str());
 	if (_responseIsReady == true) {
 		return ;
 	}
