@@ -3,6 +3,7 @@ WebServ
 .vscode
 
 *.o
+*.d
 *.a
 *.so
 *.out

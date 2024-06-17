@@ -6,7 +6,7 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/11 12:16:35 by rcutte            #+#    #+#             */
-/*   Updated: 2024/06/14 19:16:13 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/17 14:56:30 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,19 +24,6 @@ Server::Server()
   this->name_ = "_";
   this->port_ = 80;
   this->max_client_body_size_ = 1;
-  // Default server values
-  // name_ = "localhost";
-  // port_ = 80;
-  // location test;
-  // test.path_ = "/";
-  // test.redirect_ = false;
-  // test.redirect_path_ = "";
-  // test.root_ = "/var/www/html";
-  // test.index_ = "index.html";
-  // test.autoindex_ = false;
-  // test.limit_except_.push_back("GET");
-  // test.upload_path_ = "/var/www/html";
-  // locations_.insert(std::pair<std::string, location>("/", test));
 }
 
 Server::~Server()
