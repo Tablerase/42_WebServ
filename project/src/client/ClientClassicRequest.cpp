@@ -6,7 +6,7 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/12 12:55:10 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/14 19:50:53 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/17 17:25:15 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,7 +175,7 @@ void Client::_listDirectory( void ) {
 		if (errno == ENOENT) {
 			_noBodyResponseDriver(404, "", false);
 		} else if (errno == EACCES) {
-			_noBodyResponseDriver(404, "", false);
+			_noBodyResponseDriver(403, "", false);
 		} else {
 			_noBodyResponseDriver(500, "", false);
 		}

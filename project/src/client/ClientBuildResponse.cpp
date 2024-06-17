@@ -6,7 +6,7 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/12 12:57:31 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/14 19:48:20 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/17 14:39:25 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ void Client::_noBodyResponseDriver(const int status, const string& optionalBody,
 			_buildNoBodyResponse("426", " Upgrade Required", "This service require use of HTTP/1.1 protocol", isFatal);	
 			break ;
 		case 500 :
-			_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong\
+			_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong \
 on our side ... Maybe try refresh the page ?", isFatal);
 			break ;
 		case 501 :
