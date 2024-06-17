@@ -13,6 +13,7 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "utils.hpp"
+#include <complex>
 
 void	Client::_parseHeader( void ) {
 	string header_line, field_value, field_content;
@@ -36,10 +37,6 @@ void	Client::_parseHeader( void ) {
 		}
 		field_content.erase(0, field_content.find_first_not_of(" "));
 		field_content.erase(field_content.find_last_not_of(" ") + 1, field_content.npos);
-		// if (fieldContentHasForbiddenChar(field_content) == true) {
-		// 	_noBodyResponseDriver(400, "", true);
-		// 	return ;
-		// }
 		normalizeStr(field_content);
 		_checkHeaderValidity(std::pair<string, string>(field_value, field_content));
 		if (_responseIsReady == true) {
@@ -87,7 +84,7 @@ void	Client::_checkContentLength( void ) {
 	_contentLength = strtol(it->second.c_str(), &endptr, 10);
 	if (*endptr != '\0' || _contentLength < 0) {
 			_noBodyResponseDriver(400, "", true);
-	} else if (_contentLength >= _configServer->get_max_client_body_size()) {
+	} else if (_contentLength >= _configServer->get_max_client_body_size() * 1000000) {
 			cout << "Max Body Size" << _configServer->get_max_client_body_size() << endl;
 			_noBodyResponseDriver(413, "", true);
 	}
@@ -97,34 +94,48 @@ void Client::_parseChunkedRequest(string requestPart) {
 	string	chunk_size, chunk_content;
 	size_t	num_size;
 	char		*endptr;
+	cout << "ENtering Chunk Parsing With Request : " << requestPart << endl;
 	while (requestPart.size() != 0) {
 		chunk_size = requestPart.substr(0, requestPart.find("\r\n"));
-		if (requestPart.size() > 8) {
+		cout << "Chunk Size: " << chunk_size << endl;
+		if (chunk_size.size() > 8) {
+			cout << "Size" << endl;
 			_noBodyResponseDriver(400, "", true);
 			break ;
 		}
 		requestPart.erase(0, chunk_size.size() + 2);
+		cout << "AFter erasing chunk part, reauest line is : " << requestPart << endl;
 		num_size = strtol(chunk_size.c_str(), &endptr, 16);
-		if (num_size >= _configServer->get_max_client_body_size()) {
+		cout << "Strtol Receive : " << chunk_size << "And Return : " << num_size << endl;
+		if (num_size >= _configServer->get_max_client_body_size() * 1000000) {
 			_noBodyResponseDriver(413, "", true);
 			break ;
 	}
 		if (*endptr != '\0') {
+			cout << "endptr" << *endptr << endl;
 			_noBodyResponseDriver(400, "", true);
 			break ;
 		} else if (num_size == 0) {
-			if (requestPart.find("\r\n\r\n") != 0) {
+			cout << "Remaining Request : " << requestPart << "Result of find " << requestPart.find("\r\n") << "RequestPart Size " << requestPart.size() << endl;
+			if (requestPart.find("\r\n") != 0) {
 			_noBodyResponseDriver(400, "", true);
+			break ;
 			} else {
 				_bodyIsFullyRed = true;
 				break ;
 			}
 		}
-		if (requestPart.find("\r\n") != num_size) {
+		chunk_content = requestPart.substr(0, requestPart.find("\r\n"));
+		if (chunk_content.size() != num_size) {
+			cout << "I failed right there because chunk_content size is : " << chunk_content.size() << " and num size is : " << num_size << endl;
+			cout << "Chunk Content :" << chunk_content << endl;
 			_noBodyResponseDriver(400, "", true);
+			break;
 		}
-		_body += requestPart.substr(0, num_size);
+		_body += chunk_content;
 		requestPart.erase(0, num_size + 2);
+		cout << "End of a loop cycle, remaining reauest part : " << requestPart << endl;
+		cout << "And Body is currently : " << _body;
 	}
 	return ;
 }

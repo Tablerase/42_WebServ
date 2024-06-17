@@ -19,7 +19,7 @@
 #include "Server.hpp"
 #include <string>
 
-#define TIMEOUT 5
+#define TIMEOUT 120
 
 class Server;
 class Client;

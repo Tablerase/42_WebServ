@@ -13,6 +13,7 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "color.h"
+#include <cerrno>
 #include <cstring>
 #include <dirent.h>
 #include <ios>
@@ -214,14 +215,22 @@ void Client::_listDirectory( void ) {
 }
 
 void Client::_processClassicPostRequest( void ) {
-	_statFile(_requestLine.absolutePath.c_str());
+	// _statFile(_requestLine.absolutePath.c_str());
 	if (_responseIsReady == true) {
 		return ;
 	}
 	ofstream out;	
-	out.open(_requestLine.absolutePath.c_str());
+	out.open(_requestLine.absolutePath.c_str(), ios_base::app);
 	if (out.fail()) {
+		if (errno == ENOENT) {
+			_noBodyResponseDriver(404, "", false);
+		} else if (errno == EACCES) {
+			_noBodyResponseDriver(403, "", false);
+		} else if (errno == EISDIR) {
+			_noBodyResponseDriver(409, "", false);
+		} else {
 			_noBodyResponseDriver(500, "", false);
+		}
 	} else {
 		out << _body;
 		out.close();

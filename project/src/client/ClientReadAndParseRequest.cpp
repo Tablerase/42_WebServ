@@ -14,6 +14,7 @@
 #include "Server.hpp"
 #include "utils.hpp"
 #include <algorithm>
+#include <ios>
 #include <string>
 #include <sys/socket.h>
 
@@ -37,17 +38,19 @@ void	Client::_readRequest( void ) {
 			thisReadAsBeenHandled = true;
 			return ;
 		} else {
+			_headerIsFullyRed = true;
 			_header += request.substr(0, endOfHeader + 2);
 			if (request.begin() + endOfHeader + 4 == request.end()) {
 				thisReadAsBeenHandled = true;
 			} else {
-				bodyStart = endOfHeader + 5;
+				bodyStart = endOfHeader + 4;
 			}
 			_parseRequest();
 			cout << "After Parse request" << boolalpha << _responseIsReady << endl;
 		}
 	}
 	if (thisReadAsBeenHandled == false && _responseIsReady == false) {
+		cout << "Body is Present : " << boolalpha << _bodyIsPresent << "Request Is Present : " << boolalpha << _requestIsChunked << endl;
 		if (_bodyIsPresent == false) {
 			_noBodyResponseDriver(400, "", true);
 		} else if (_requestIsChunked == true) {
@@ -56,14 +59,11 @@ void	Client::_readRequest( void ) {
 			_body += request.substr(bodyStart, request.npos);
 			if (_body.size() > _contentLength + 2) {
 				_noBodyResponseDriver(400, "", true);
-			} else if (_body.size() == _contentLength + 2) {
-				if (_body.find_last_of("\r") != _contentLength && _body.find_last_of("\n") != _contentLength + 1) {
-					_noBodyResponseDriver(400, "", true);
-				} else {
-					_bodyIsFullyRed = true;
-				}
+			} else if (_body.size() == _contentLength) {
+				_bodyIsFullyRed = true;
 			}
 		}
+		cout << "BOdy Size : " << _body.size() << "BOdy Content : " << _body << "Content Length : " << _contentLength << endl;
 	}
 	if (_responseIsReady == false && (_bodyIsFullyRed == true || _bodyIsPresent == false)) {
 		if (_requestLine.method.compare("GET") == 0) {
