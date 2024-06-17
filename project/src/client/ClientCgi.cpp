@@ -69,6 +69,8 @@ void	Client::_buildEnv() {
 	_env.push_back("DOCUMENT_ROOT=" + _locationBlockForTheRequest->root_);
 	if (_headerFields.find("cookie") != _headerFields.end()) {
 		_env.push_back("HTTP_COOKIE=" + _headerFields.find("cookie")->second);
+	} else {
+		_env.push_back("HTTP_COOKIE=");
 	}
 	if (_headerFields.find("user-agent") != _headerFields.end()) {
 		_env.push_back("HTTP_USER_AGENT=" + _headerFields.find("user-agent")->second);
