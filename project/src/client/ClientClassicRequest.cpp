@@ -55,7 +55,7 @@ inline bool	Client::_indexFileExist( const string path) {
 }
 
 inline bool	Client::_requestIsDir( const string path) {
-	cout << "stating indec" << endl;
+	cout << "stating indec with path" << path << endl;
 	struct stat	buffer;
 	const int ret = stat(path.c_str(), &buffer);
 	if (ret != 0) {
@@ -67,6 +67,7 @@ inline bool	Client::_requestIsDir( const string path) {
 
 void	Client::_manageGetRequest( void ) {
 	// cout << "The request is :" << _requestLine.filePath << endl;
+	cout << _requestLine.absolutePath << endl;
 	if (_requestIsDir(_requestLine.absolutePath) == true) {
 		cout << "I got a request ending with a /" << endl;
 		string	index = _locationBlockForTheRequest->index_;
@@ -84,14 +85,19 @@ void	Client::_manageGetRequest( void ) {
 			return ;
 		} else {
 			_requestLine.absolutePath += _locationBlockForTheRequest->index_;
+			cout << "New Rl :" << _requestLine.absolutePath;
 		}
 	}
 	string extension = _requestLine.absolutePath.substr(_requestLine.absolutePath.find_last_of("."),
 			_requestLine.absolutePath.npos);
 	map<string,string>::const_iterator it = _locationBlockForTheRequest->cgi_.find(extension);
+	cout << "map" << endl;
+	for (map<string, string>::const_iterator it = _locationBlockForTheRequest->cgi_.begin(); it != _locationBlockForTheRequest->cgi_.end(); ++it) {
+		cout << "Cgi Name : " << it->first << " Cgi path : " << it->second << endl; 
+	}
 	if (extension != "" && extension.find("/") == extension.npos
 			&& it != _locationBlockForTheRequest->cgi_.end()) {
-		cout << RED << "CGI HAS BEEN CALLED" << endl;
+		cout << RED << "CGI HAS BEEN CALLED" << RESET << endl;
 		_cgiBinPath = it->second;
 		_cgiInit();	
 	} else {
@@ -215,9 +221,20 @@ void Client::_listDirectory( void ) {
 }
 
 void Client::_processClassicPostRequest( void ) {
-	// _statFile(_requestLine.absolutePath.c_str());
-	if (_responseIsReady == true) {
-		return ;
+	if (_requestIsDir(_requestLine.absolutePath) == false) {
+		string pathForNewLoc = _requestLine.filePath.substr
+			(0, _requestLine.filePath.find_last_of("/") + 1);
+		string isolatedFile = _requestLine.filePath.substr
+			(_requestLine.filePath.find_last_of("/") + 1, _requestLine.filePath.npos);
+		_locationBlockForTheRequest = _configServer->get_location(pathForNewLoc);
+		if (_locationBlockForTheRequest->upload_path_ != "") {
+			_requestLine.absolutePath = _locationBlockForTheRequest->upload_path_;
+			if (_requestLine.absolutePath.find_last_of("/")
+					!= _requestLine.absolutePath.size() - 1) {
+				_requestLine.absolutePath += "/";
+			}
+			_requestLine.absolutePath += isolatedFile;
+		}
 	}
 	ofstream out;	
 	out.open(_requestLine.absolutePath.c_str(), ios_base::app);

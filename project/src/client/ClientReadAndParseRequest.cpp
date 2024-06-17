@@ -130,6 +130,7 @@ void	Client::_parseRequestLine( const string& requestLine) {
 		_responseHeader.insert(pair<string, string>("Location: ", _locationBlockForTheRequest->redirect_path_));
 		_noBodyResponseDriver(307, "", true);
 	}
+	cout << "||||||" << _locationBlockForTheRequest->root_ << "|||||" << endl;
 }
 
 void Client::_parseMethod(const string& method) {

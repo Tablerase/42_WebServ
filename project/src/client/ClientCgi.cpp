@@ -22,21 +22,20 @@
 #include <unistd.h>
 
 void	Client::_cgiInit( void ) {
-	_cgiScriptPath = _requestLine.filePath.substr(0,
-			_requestLine.filePath.find_last_of("/") + 1);
-	_cgiScriptName = _requestLine.filePath.substr
-		(_requestLine.filePath.find_last_of("/"), _requestLine.filePath.npos);
+	_cgiScriptPath = _requestLine.absolutePath.substr(0,
+			_requestLine.absolutePath.find_last_of("/") + 1);
+	_cgiScriptName = _requestLine.absolutePath.substr
+		(_requestLine.absolutePath.find_last_of("/") + 1, _requestLine.absolutePath.npos);
 
 	if (_requestLine.method == "POST") {
-		_manageBodyForCgi();
 		stringstream infileName;
 		infileName << "." << _cgiScriptName << _connectionEntry << "infile";
 		_cgiInfilePath = _cgiScriptPath + infileName.str();
 	} 
-	_manageCgiOutfile();
 	stringstream outfileName;
 	outfileName << "." << _cgiScriptName << _connectionEntry << "outfile";
-	_cgiInfilePath = _cgiScriptPath + outfileName.str();
+	cout << "Outfile Name : " << outfileName.str() << endl;
+	_cgiOutFilePath = _cgiScriptPath + outfileName.str();
 	if ((_cgiScriptPid = fork()) == -1) {
 		_noBodyResponseDriver(500, "", false);
 	} else if (_cgiScriptPid == 0) {
@@ -48,10 +47,11 @@ void	Client::_cgiInit( void ) {
 }
 
 void	Client::_childrenRoutine() {
-	if (_requestLine.method == "GET") {
+	if (_requestLine.method == "POST") {
 		_manageBodyForCgi();
 	} _manageCgiOutfile();
 	if (chdir(_cgiScriptPath.c_str()) == -1) {
+		cerr << "chdir failed" << endl;
 		throw ChildIsExiting();
 	}
 	_buildEnv();
@@ -60,7 +60,8 @@ void	Client::_childrenRoutine() {
 	_arg.push_back(_cgiScriptName);
 	vectorToCStringTab(_arg, _cArg);
 	execve(_cArg[0], &_cArg[0], &_cEnv[0]);
-		_noBodyResponseDriver(500, "", false);
+	cerr << "Execve failed ..." << endl;
+	throw ChildIsExiting();
 }
 
 void	Client::_buildEnv() {
@@ -90,7 +91,7 @@ void	Client::_buildEnv() {
 }
 
 void	Client::_manageBodyForCgi( void ) {
-	const string file = _cgiScriptPath + _cgiInfilePath;
+	const string file = _cgiInfilePath;
 	ofstream infile;
 	infile.open(file.c_str());
 	if (infile.fail()) {
@@ -112,12 +113,15 @@ void	Client::_manageBodyForCgi( void ) {
 }
 
 void	Client::_manageCgiOutfile( void ) {
-	const string file = _cgiScriptPath + _cgiInfilePath;
+	const string file = _cgiOutFilePath;
+	cout << "Trying to create " << file << endl;
 	const int fd = open(file.c_str(), O_CREAT, O_RDWR);
 	if (fd < 0) {
+		cout << "Outfile Failed" << endl;
 		throw ChildIsExiting();
 	}
 	if (dup2(fd, STDOUT_FILENO) == -1) {
+		cout << "Dup2 Failed" << endl;
 		throw ChildIsExiting();
 	} close (fd);
 }
@@ -135,6 +139,8 @@ void	Client::_checkCgiStatus( void ) {
 	if (waitpid(_cgiScriptPid, &status, WNOHANG) <= 0) {
 		return ;
 	} else if (WIFEXITED(status) != true || WEXITSTATUS(status) != 0){
+		// _cgiInfilePath = "";
+		// _cgiOutFilePath = "";
 		_noBodyResponseDriver(500, "", false);
 	} else {
 		_readOutfile();
@@ -154,7 +160,7 @@ void	Client::_readOutfile( void ) {
 	ifstream toSend;
 	toSend.open(_cgiOutFilePath.c_str());
 	if (toSend.fail()) {
-		_buildNoBodyResponse("500", " Internal Server Error", "Sorry, it looks like something went wrong on our side ... Maybe try refresh the page ?", false);
+		_noBodyResponseDriver(500, "", false);
 	}
 	_bodyStream << toSend.rdbuf();
 	_response << "HTTP/1.1 200 OK\r\n" << _bodyStream.str(); 
