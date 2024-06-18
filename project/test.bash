@@ -19,8 +19,9 @@ BOLDORANGE='\033[1;33m'
 # 2. More than 1000 servers (not working - too busy - auto stop - no leaks)
     # Error msg: Could Not Start Server because of Bad file descriptor
 
+
 # Build the web server
-# make re
+make re
 
 # Number of servers
 N=${1:-4} # The first argument passed to the script

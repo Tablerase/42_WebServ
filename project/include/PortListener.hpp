@@ -6,7 +6,7 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 13:25:40 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/14 19:59:12 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/18 14:34:45 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <string>
 
 #define TIMEOUT 3
+#define MAX_CONNECTIONS 4000
 
 class Server;
 class Client;

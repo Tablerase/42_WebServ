@@ -6,7 +6,7 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/04 14:07:54 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/17 16:58:10 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/18 14:34:37 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,8 +112,9 @@ void	PortListener::_acceptConnection( void ) {
 		close (clientFd);
 		return ;
 	}
-	if (clientFd > 1000) {
+	if (clientFd > MAX_CONNECTIONS) {
 		_writeMinimalAnswer(clientFd, "503", " Too Busy", "Server is too busy at the moment. try again later.");
+    return;
 	}
 	Client* newClient;
 	try {
@@ -165,9 +166,9 @@ const string*	PortListener::_thisNeedToSendAnswer( int fd ) {
 
 void	PortListener::_sendMinimalAnswer(int fd, string answer) {
 	write(fd, answer.c_str(), answer.size());
+	_mainEventLoop->deleteFdOfInterest(fd);
 	close(fd);
 	_immediateResponse.erase(fd);
-	_mainEventLoop->deleteFdOfInterest(fd);
 }
 
 void	PortListener::manageEvent(int fd) {

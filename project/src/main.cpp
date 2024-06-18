@@ -6,7 +6,7 @@
 /*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/11 16:37:44 by rcutte            #+#    #+#             */
-/*   Updated: 2024/06/14 19:28:35 by rcutte           ###   ########.fr       */
+/*   Updated: 2024/06/18 14:26:42 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,11 +42,11 @@ int main(int argc, char** argv){
     cout << *it;
   }
 	int isChild = 0;
-	try {
+	// try {
 		EventLoop mainLoop(listeners);
 		isChild = mainLoop.loopForEvent();
-	} catch (exception& e) {
-		cerr << "Could Not Start Server because of " << e.what() << endl;
-	}
+	// } catch (exception& e) {
+	// 	cerr << "Could Not Start Server because of " << e.what() << endl;
+	// }
 	return (isChild);
 }
