@@ -23,13 +23,6 @@ void parse_virtual_server_field(Server & virtual_server, string & line, already_
 
 pair<string, vector<string> > parse_server_line(string & line) {
   vector<string> server_fields = server_fields_vector();
-
-  // ######################### TO DO ######################### //
-  //                                                           //
-  // check for fields that were not set and set default values //
-  //                                                           //
-  // ######################### TO DO ######################### //
-
   if (line.find(";") == string::npos)
     throw runtime_error("missing ';' at end of line.");
   string word = get_word(line);

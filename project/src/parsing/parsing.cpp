@@ -89,6 +89,8 @@ vector<PortListener> read_config_file(ifstream & config_file) {
     Server virtual_server = parse_virtual_server(config_file);
     add_virtual_server_to_listeners(listeners, virtual_server);
   }
+  if (listeners.empty() == true)
+    throw runtime_error("empty configuration file.");
   return listeners;
 }
 
