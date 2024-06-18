@@ -29,9 +29,7 @@ void	Client::_readRequest( void ) {
 	const string request(_buffer, _singleReadBytes);
 	memset(_buffer, 0, _singleReadBytes);
 	if (_headerIsFullyRed == false) {
-		// cout << request << endl;
 		const size_t endOfHeader = request.find("\r\n\r\n");
-		cout << endOfHeader << endl;
 		if (endOfHeader == request.npos) {
 			_header += request;
 			thisReadAsBeenHandled = true;
@@ -50,12 +48,16 @@ void	Client::_readRequest( void ) {
 	if (thisReadAsBeenHandled == false && _responseIsReady == false) {
 		if (_bodyIsPresent == false) {
 			_noBodyResponseDriver(400, "", true);
-		} else if (_requestIsChunked == true) {
-			_parseChunkedRequest(request.substr(bodyStart, request.npos));
-		} else {
-			if (request.find("\r\n", bodyStart) == bodyStart) {
-				bodyStart += 2;
+		}
+		if (request.find("\r\n", bodyStart) == bodyStart) {
+			bodyStart += 2;
+		}
+		if (_requestIsChunked == true) {
+			_chunkedBody += request.substr(bodyStart, request.npos);
+			if (_singleReadBytes != BUFFER_SIZE) {
+				_parseChunkedRequest();
 			}
+		} else {
 			_body += request.substr(bodyStart, request.npos);
 			if (_body.size() > _contentLength) {
 				_noBodyResponseDriver(400, "", true);
@@ -77,7 +79,6 @@ void	Client::_readRequest( void ) {
 }
 
 void	Client::_parseRequest( void ) {
-	_copyForDebug = _header;
 	string requestLine = _header.substr(0, _header.find("\r\n"));
 	_header.erase(0, requestLine.size() + 2);
 	string host = _header.substr(0, _header.find("\r\n"));

@@ -1,4 +1,7 @@
 
+import os, datetime
+
+serverName = os.environ.get('SERVER_NAME')
 print("Content-type:text/html")
 
 body = "<head><title> Bye Bye !"
@@ -14,6 +17,9 @@ body += "See Ya !"
 body += "</h1></body></html>"
 body += "<br><a href=\"/python/welcome.py\"><button> Go back to main page</button></a>"
 
+print(f"Server: {serverName}")
+date = datetime.datetime.now().astimezone().strftime("%a, %d %b %G %T %Z")
+print(f"Date : {date}")
 print(f"Set-Cookie: user=blbkvvv;Expires=Thu, 01-Jan-1970 00:00:10 GMT;")
 print(f"Set-Cookie: bgcolor=spspspsp;Expires=Thu, 01-Jan-1970 00:00:10 GMT;")
 print(f"Content-Length: {len(body)}\r\n\r\n")

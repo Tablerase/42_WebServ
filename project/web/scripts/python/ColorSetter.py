@@ -1,7 +1,8 @@
 
-import cgi, cgitb
+import cgi, os, datetime
 
 form = cgi.FieldStorage()
+serverName = os.environ.get('SERVER_NAME')
 
 bgcolor = form["BackGroundColor"]
 print("Content-type:text/html")
@@ -19,7 +20,9 @@ body += "Color Successefully modified"
 body += "</h1></body></html>"
 body += "<br><a href=\"/python/welcome.py\"><button> Go back to your profile</button></a>"
 
-if bgcolor:
-    print(f"Set-Cookie: bgcolor={bgcolor.value}")
+print(f"Server: {serverName}")
+date = datetime.datetime.now().astimezone().strftime("%a, %d %b %G %T %Z")
+print(f"Date : {date}")
+print(f"Set-Cookie: bgcolor={bgcolor.value}")
 print(f"Content-Length: {len(body)}\r\n\r\n")
 print(f"{body}")

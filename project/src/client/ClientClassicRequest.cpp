@@ -60,7 +60,6 @@ inline bool	Client::_requestIsDir( const string path) {
 }
 
 void	Client::_manageGetRequest( void ) {
-	cout << _requestLine.absolutePath << endl;
 	if (_requestIsDir(_requestLine.absolutePath) == true) {
 		string	index = _locationBlockForTheRequest->index_;
 		if (index == "") {
@@ -176,7 +175,6 @@ void Client::_listDirectory( void ) {
 				} pDir.erase(pDir.find_last_of('/'), pDir.npos);
 				if (pDir.size() >= _locationBlockForTheRequest->root_.size()) {
 					pDir.erase(0, _locationBlockForTheRequest->root_.size());
-					cout << "pDir : " << pDir << endl;
 					if (pDir[0] != '/' && pDir.size() != 0) {
 						pDir.insert(0, "/");
 					}

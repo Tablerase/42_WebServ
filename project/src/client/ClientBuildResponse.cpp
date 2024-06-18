@@ -174,6 +174,7 @@ void	Client::_fillResponse( string status, bool shouldClose ) {
 	if (_configServer != NULL) {
 		_response << "Server: " << _configServer->get_name() << "\r\n";
 	}
+	_responseHeader.insert(pair<string, string>("Date: ", getDate()));
 	for (map<string, string>::iterator it = _responseHeader.begin(); it != _responseHeader.end(); ++it) {
 		_response << it->first << it->second << "\r\n";
 	} _response << "\r\n";
@@ -197,6 +198,7 @@ void	Client::_sendAnswer( void ) {
 	_requestLine.method.clear();
 	_header.clear();
 	_body.clear();
+	_chunkedBody.clear();
 	_headerFields.clear();
 	_response.clear();
 	_bodyStream.clear();

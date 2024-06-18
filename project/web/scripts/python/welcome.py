@@ -1,4 +1,4 @@
-import cgi, cgitb, os
+import cgi, os, datetime
 from http.cookies import SimpleCookie
 
 cookieString = os.environ.get('HTTP_COOKIE')
@@ -42,7 +42,9 @@ else:
     body += "</h1></body></html>"
     body += "<br><a href=\"/python/connectionForm.html\"><button> Create a new profile</button></a>"
 
-print("Content-Type: Text/html")
 print(f"Server: {serverName}")
+date = datetime.datetime.now().astimezone().strftime("%a, %d %b %G %T %Z")
+print(f"Date : {date}")
+print("Content-Type: Text/html")
 print(f"Content-Length: {len(body)}\r\n")
 print(f"{body}")

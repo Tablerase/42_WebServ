@@ -71,7 +71,6 @@ class Client {
 		void				_parseMethod( const string& method);
 		void 				_parseUri( const string& uri);
 		void				_parseProtocol( const string& protocol);
-		void				_checkForReferer( void );
 		void				_buildAbsolutePath(const string& locPath);
 		void				_manageDeleteRequest( void );
 		void				_manageGetRequest( void );
@@ -93,7 +92,7 @@ class Client {
 		void	_parseHeader( void );
 		void	_checkContentLength(void);
 		void	_checkForChunkedRequest( void );
-		void	_parseChunkedRequest( string RequestPart );
+		void	_parseChunkedRequest( );
 		void	_checkHeaderValidity( pair<string, string> newHeader);
 
 		//ClientCgi.cpp
@@ -119,10 +118,11 @@ class Client {
 		t_status						_status;
 		t_requestLine				_requestLine;
 		char								_buffer[BUFFER_SIZE];
-		int							_singleReadBytes;
+		int									_singleReadBytes;
 		size_t							_bytesReadFromBody;
 		string							_header;
 		string							_body;
+		string							_chunkedBody;
 		map<string, string>	_headerFields;
 		bool								_headerIsFullyRed;
 		bool								_bodyIsPresent;
@@ -151,7 +151,6 @@ class Client {
 		map<string, string>	_responseHeader;
 		bool								_responseIsReady;
 		bool								_connectionShouldBeClosed;
-		string	_copyForDebug;
 };
 
 #endif

@@ -185,6 +185,7 @@ void	PortListener::manageEvent(int fd) {
 		try {
 			it->second->manageNewEvent();
 		} catch ( Client::ChildIsExiting& e) {
+			cerr << RED << "CGI did not succed " << endl;
 			throw Client::ChildIsExiting();
 		} catch (exception& e) {
 			_closeConnection(fd);
