@@ -115,6 +115,8 @@ int EventLoop::loopForEvent( void ) {
 					_getOwner(_eventManager[i].data.fd)->manageEvent(_eventManager[i].data.fd);
 				} catch (Client::ChildIsExiting& e) {
 					return (1);
+				} catch (exception& e) {
+					cerr << "An error occured in port Listener : " << e.what() << endl;
 				}
 			}
 		}
