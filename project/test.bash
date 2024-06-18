@@ -15,9 +15,7 @@ BOLDRED='\033[1;31m'
 BOLDORANGE='\033[1;33m'
 
 # ! Errors to review/fix:
-# 1. Nothing append in case of empty conf file (no error, no warning)
-# 2. More than 1000 servers (not working - too busy - auto stop - no leaks)
-    # Error msg: Could Not Start Server because of Bad file descriptor
+
 
 
 # Build the web server
@@ -30,6 +28,7 @@ N=${1:-4} # The first argument passed to the script
 echo "" > test.conf
 
 # Loop to create each server block
+# Test1: Create a configuration file with N servers
 for (( i=1; i<=N; i++ ))
 do
     echo "server {" >> test.conf
@@ -43,33 +42,100 @@ do
     echo "" >> test.conf
 done
 
-# Start the web server in the background
-./WebServ "test.conf" & # & at the end to run the process in the background
-pid=$! # $! is the PID of the last background process
+# Test2: Create a N servers with the same port and different server_name
+for (( i=1; i<=N; i++ ))
+do
+    echo "server {" >> test.conf
+    echo "    listen 6060;" >> test.conf
+	echo "    server_name localhost$((i+8000));" >> test.conf
+	echo "    location / {" >> test.conf
+	echo "        root ./web/pages;" >> test.conf
+	echo "        index index.html;" >> test.conf
+	echo "    }" >> test.conf
+    echo "}" >> test.conf
+    echo "" >> test.conf
+done
 
-sleep 1
+# Test3: Limit body size
+echo "server {" >> test.conf
+echo "    listen 6000;" >> test.conf
+echo "    server_name localhost;" >> test.conf
+echo "    client_max_body_size 1;" >> test.conf
+echo "    location / {" >> test.conf
+echo "        root ./web/pages;" >> test.conf
+echo "        index index.html;" >> test.conf
+echo "        limit_except GET|POST;" >> test.conf
+echo "    }" >> test.conf
+echo "}" >> test.conf
+
+# Start the web server in the background
+./WebServ "test.conf" > /dev/null  & # & at the end to run the process in the background
+pid=$! # $! is the PID of the last background process
+# Non-blocking check
+for i in {1..5}; do
+    if ! kill -0 $pid 2> /dev/null; then
+        echo -e "[❌]${RED} Could Not Start Server${RESET}"
+        exit 1
+    fi
+    sleep 1
+done
+sleep 1 # Wait for the server to start
+
 # Run the tests
 
 # Test 1
-echo -e "${BOLDBLUE} Test 1: ${RESET}"
+echo -e "${BOLDBLUE} Test 1: ${RESET} Server with different ports"
 # Iterate over the servers and test each one of them with curl
 test1=1
 for (( i=1; i<=N; i++ ))
 do
-	curl -s http://localhost:$((i+8000))/index.html | diff - web/pages/index.html
+	curl -s http://localhost:$((i+8000))/index.html | diff - web/pages/index.html > /dev/null
 	if [ $? -eq 0 ]; then
 		test1=$((test1+1))
 	else
-		echo -e "${RED} Test $((i+1)) failed ${RESET}"
+		echo -e "[❌]${RED} Server $((i)) failed ${RESET}"
 	fi
 done
 
 if [ $test1 -eq $((N+1)) ]; then
-	echo -e "${GREEN} All tests passed ${RESET}"
+	echo -e "[✅]${GREEN} Handle ${N} servers ${RESET}"
+else
+	echo -e "[❌]${RED} Handle ${N} servers ${RESET}"
 fi
 
+# Test 2
+echo -e "${BOLDBLUE} Test 2: ${RESET} Server with the same port and different server_name"
+test2=1
+for (( i=1; i<=N; i++ ))
+do
+	curl -s -H "Host: localhost$((i+8000))" http://localhost:6060/index.html | diff - web/pages/index.html > /dev/null
+	if [ $? -eq 0 ]; then
+		test2=$((test2+1))
+	else
+		echo -e "[❌]${RED} Server $((i)) ${RESET}"
+	fi
+done
+
+if [ $test2 -eq $((N+1)) ]; then
+	echo -e "[✅]${GREEN} Handle ${N} servers ${RESET}"
+else
+	echo -e "[❌]${RED} Handle ${N} servers ${RESET}"
+fi
+
+# Test 2
+# echo -e "${BOLDBLUE} Test 2: ${RESET}"
+# # Test the server with a body size greater than the limit
+# dd if=/dev/zero of=testfile bs=1024 count=10240 # 1MB file called testfile
+# curl -s -X POST -d @testfile http://localhost:6000/index.html # Send the file to the server
+# if [ $? -eq 0 ]; then
+# 	echo -e "[❌]${RED} Body size greater than the limit ${RESET}"
+# else
+# 	echo -e "[✅]${GREEN} Body size greater than the limit ${RESET}"
+# fi
+# rm -f testfile # Remove the file
+
 # Sleep
-# sleep 4
+sleep 4
 
 # Stop the web server
 kill $pid
