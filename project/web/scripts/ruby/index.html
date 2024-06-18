@@ -88,13 +88,13 @@
 		<p>Project done by: <strong>abourgeo</strong>, <strong>rcutte</strong>, <strong>vlevy</strong></p>
 		
 		<form action="ruby_cgi.rb" method="get">
-			<label for="input_number">Select a number:<span id="currentValue" style="font-weight: bold ; color: aliceblue; padding-left: 1em;"></span>
-			</label>
-			<br>
-			<input type="range" id="input_number" name="input_number" min="1" max="15" oninput="updateValue(this.value)" style="padding: 5px;">
-			<br>
 			<div style="text-align: center; padding: 20px;">
-				<button type="submit" value="Submit" class="button_ruby" role="button">Recover Rubies</button>
+				<label for="input_number">Select a number:<span id="currentValue" style="font-weight: bold ; color: aliceblue; padding-left: 1em;"></span>
+				</label>
+				<br>
+				<input type="range" id="input_number" name="input_number" min="1" max="15" oninput="updateValue(this.value)" style="padding: 5px;">
+				<br>
+				<button type="submit" value="Submit" class="button_ruby" role="button" style="margin-top: 40px;">Recover Rubies</button>
 			</div>
 		</form>
 		<script>
