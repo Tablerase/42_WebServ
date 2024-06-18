@@ -171,7 +171,6 @@ void	PortListener::_sendMinimalAnswer(int fd, string answer) {
 }
 
 void	PortListener::manageEvent(int fd) {
-	// cout << "Client Map Size is : " << _clientMap.size() << endl;
 	map<int, Client*>::iterator it = _clientMap.find(fd);
 	const string*								immediateResponse;
 	if (fd == _socketFd) {
@@ -187,8 +186,7 @@ void	PortListener::manageEvent(int fd) {
 			it->second->manageNewEvent();
 		} catch ( Client::ChildIsExiting& e) {
 			throw Client::ChildIsExiting();
-		} catch (Client::CloseMeException& e) {
-			cerr << e.what() << endl;
+		} catch (exception& e) {
 			_closeConnection(fd);
 		}
 	}
@@ -204,7 +202,6 @@ Server*	PortListener::getServer(const string& name) {
 
 void PortListener::getTimeout(void) {
 	vector<int> toBeClosed;
-	// cout << RED << "I'm PortListener " << this->getListeningPort() << " and i manage " << _clientMap.size() << " clients" << RESET << endl;
 	for (map<int, Client*>::iterator it = _clientMap.begin();
 			it != _clientMap.end(); ++it) {
 		if (it->second->isCLientTimeout() == true) {	

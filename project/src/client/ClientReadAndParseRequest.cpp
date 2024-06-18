@@ -24,7 +24,6 @@ void	Client::_readRequest( void ) {
 	_status = READING;
 	_singleReadBytes = recv(_connectionEntry, _buffer, BUFFER_SIZE, MSG_DONTWAIT);	
 	if (_singleReadBytes <= 0) {
-		cout << "Failed read " << "Red bytes : " << _singleReadBytes << endl;
 		throw CloseMeException();
 	}
 	const string request(_buffer, _singleReadBytes);
@@ -46,11 +45,9 @@ void	Client::_readRequest( void ) {
 				bodyStart = endOfHeader + 4;
 			}
 			_parseRequest();
-			cout << "After Parse request" << boolalpha << _responseIsReady << endl;
 		}
 	}
 	if (thisReadAsBeenHandled == false && _responseIsReady == false) {
-		cout << "Body is Present : " << boolalpha << _bodyIsPresent << "Request Is Present : " << boolalpha << _requestIsChunked << endl;
 		if (_bodyIsPresent == false) {
 			_noBodyResponseDriver(400, "", true);
 		} else if (_requestIsChunked == true) {
@@ -66,7 +63,6 @@ void	Client::_readRequest( void ) {
 				_bodyIsFullyRed = true;
 			}
 		}
-		cout << "BOdy Size : " << _body.size() << "BOdy Content : " << _body << "Content Length : " << _contentLength << endl;
 	}
 	if (_responseIsReady == false && (_bodyIsFullyRed == true || _bodyIsPresent == false)) {
 		if (_requestLine.method.compare("GET") == 0) {
@@ -100,28 +96,12 @@ void	Client::_parseRequest( void ) {
 	if (_responseIsReady == true) {
 		return ;
 	}
-	// _checkForReferer();
 	_checkForChunkedRequest();
 	_checkContentLength();
 	if (_requestIsChunked == true || _contentLength > 0) {
 		_bodyIsPresent = true;
 	}
 	return ;
-}
-
-void	Client::_checkForReferer( void ) {
-	map<string, string>::iterator it = _headerFields.find("referer");
-	if (it != _headerFields.end()) {
-		if (it->second.find("://") == it->second.npos) {
-			return ;
-		}
-		string referer = it->second.substr(it->second.find("://") + 3, it->second.npos);
-		cout << "Referer : " << referer << endl;
-		if (referer.find_first_of("/") == referer.npos) {
-			return ;
-		}
-		// _buildAbsolutePath(referer);
-	}
 }
 
 void	Client::_parseRequestLine( const string& requestLine) {
@@ -214,12 +194,10 @@ void Client::_parseProtocol(const string& protocol) {
 
 void	Client::_buildAbsolutePath(const string& locPath) {
 	_locationBlockForTheRequest = _configServer->get_location(locPath);
-	cout << "Location block : " << _locationBlockForTheRequest->root_ << endl;
 	string	rootOfLocation(_locationBlockForTheRequest->root_);
 	if (*(rootOfLocation.end() - 1) == '/') {
 		rootOfLocation.erase(rootOfLocation.size() - 1, rootOfLocation.npos);
 	}
 	_requestLine.absolutePath = rootOfLocation + _requestLine.filePath;
-	cout << "abs : " << _requestLine.absolutePath << endl;
 
 }

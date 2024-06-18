@@ -114,7 +114,6 @@ int EventLoop::loopForEvent( void ) {
 				try {
 					_getOwner(_eventManager[i].data.fd)->manageEvent(_eventManager[i].data.fd);
 				} catch (Client::ChildIsExiting& e) {
-					cerr << e.what() << endl;
 					return (1);
 				}
 			}

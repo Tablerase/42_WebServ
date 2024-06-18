@@ -42,15 +42,11 @@ int main(int argc, char** argv){
     cout << *it;
   }
 	int isChild = 0;
-	// try {
+	try {
 		EventLoop mainLoop(listeners);
 		isChild = mainLoop.loopForEvent();
-	// } catch (exception& e) {
-	// 	cerr << "Could Not Start Server because of " << e.what() << endl;
-	// }
+	} catch (exception& e) {
+		cerr << "Could Not Start Server because of " << e.what() << endl;
+	}
 	return (isChild);
 }
-
-/*
-[ TO CHECK ] set default values
-*/

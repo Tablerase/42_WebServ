@@ -52,8 +52,6 @@ bool	Client::_checkExtensionMatch(const string& extension) {
 }
 
 void Client::_noBodyResponseDriver(const int status, const string& optionalBody, bool isFatal) {
-	// cout << "A error happends with request : " << _copyForDebug << endl;
-	// cout << "Occured Error is : " << status << endl;
 	switch (status) {
 		case 201 :
 			_buildNoBodyResponse("201", " Created", "Data Successefully Uploaded", isFatal);
@@ -117,7 +115,6 @@ void Client::_buildNoBodyResponse(string status, string info, string body, bool 
 	if (_configServer != NULL) {
 		const string	customPage = _configServer->get_error_page(strtol(status.c_str(), NULL, 10));
 		if (customPage != "") {
-			cout << customPage << endl;
 			customPageIsPresent = _loadCustomStatusPage(customPage);
 		}
 	}
@@ -141,23 +138,19 @@ void Client::_buildNoBodyResponse(string status, string info, string body, bool 
 bool Client::_loadCustomStatusPage(string path) {
 	struct stat buf;
 	if (stat(path.c_str(), &buf) != 0) {
-		cout << "stat fail" << endl;
 		return (false);
 	}
 	else if (S_ISREG(buf.st_mode) == false) {
-		cout << "ain't regular" << endl;
 		return (false);
 	}
 	ifstream customPage;
 	customPage.open(path.c_str());
 	if (customPage.fail()) {
-		cout << "ain't open" << endl;
 		return (false);
 	}
 	string extension = path.substr(path.find_last_of(".", path.npos));
 	_generateContentExtension(extension);
 	if (_checkExtensionMatch(extension) == false) {
-		cout << "ain't extension" << endl;
 		return (0);
 	}
 	_bodyStream << customPage.rdbuf();
@@ -169,16 +162,6 @@ bool Client::_loadCustomStatusPage(string path) {
 }
 
 void	Client::_fillResponse( string status, bool shouldClose ) {
-	cout << "In fill response" << endl;
-	for (map<string, string>::iterator it = _headerFields.begin(); it != _headerFields.end(); ++it) {
-		cout << "New Header : " << it->first << ":" << it->second << endl;
-	}
-	const map<string, string>::const_iterator it = _headerFields.find("connection");
-	if (it == _responseHeader.end() || _headerFields.size() == 0) {
-		shouldClose = true;
-	} else if (shouldClose != true && it->second.compare("keep-alive") != 0) {
-		shouldClose = true;
-	}
 	if (_responseHeader.find("Connection") == _responseHeader.end()) {
 		if (shouldClose == true) {
 			_responseHeader.insert(pair<string, string>("Connection: ", "close"));
@@ -204,13 +187,9 @@ void	Client::_fillResponse( string status, bool shouldClose ) {
 
 void	Client::_sendAnswer( void ) {
 	const size_t writeValue = write(_connectionEntry, _response.str().c_str(), _response.str().size());
-	cout << "Sending a response" << endl;
-	cout << _response.str() << endl;
 	if (writeValue != _response.str().size()) {
-		cout << "Close bc of write bytes" << endl;
 		throw CloseMeException();
 	} else if (_connectionShouldBeClosed == true) {
-		cout << "Close bc of preceed error" << endl;
 		throw CloseMeException();
 	}
 	_requestLine.cgiQuery.clear();

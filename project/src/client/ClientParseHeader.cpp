@@ -80,10 +80,10 @@ void	Client::_checkContentLength( void ) {
 	}
 	char *endptr;
 	_contentLength = strtol(it->second.c_str(), &endptr, 10);
+	cout << RED << _contentLength << RESET << endl;
 	if (*endptr != '\0' || _contentLength < 0) {
 			_noBodyResponseDriver(400, "", true);
 	} else if (_contentLength >= _configServer->get_max_client_body_size() * 1000000) {
-			cout << "Max Body Size" << _configServer->get_max_client_body_size() << endl;
 			_noBodyResponseDriver(413, "", true);
 	}
 }

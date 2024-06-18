@@ -73,7 +73,6 @@ location const *Server::get_location(std::string const &path) const {
 			old_cpy.erase(old_cpy.size() - 1, old_cpy.npos);
 		}
 		string new_path = old_cpy.substr(0, old_cpy.find_last_of("/") + 1);
-		cout << "New Path : " << new_path << endl;
     return get_location(new_path);
   }
 }

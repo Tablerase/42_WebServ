@@ -12,7 +12,6 @@
 
 #include "Client.hpp"
 #include "Server.hpp"
-#include "color.h"
 #include <cerrno>
 #include <cstring>
 #include <dirent.h>
@@ -42,34 +41,27 @@ void Client::_managePostRequest( void ) {
 }
 
 inline bool	Client::_indexFileExist( const string path) {
-	cout << "stating indec" << endl;
 	struct stat	buffer;
 	const int ret = stat(path.c_str(), &buffer);
 	if (ret == 0) {
-		cout << "stat succed" << endl;
 		return true;
 	} else if (errno != ENOENT) {
-		cout << "errno" << endl;
 		return true;
 	} return false;
 }
 
 inline bool	Client::_requestIsDir( const string path) {
-	cout << "stating indec with path" << path << endl;
 	struct stat	buffer;
 	const int ret = stat(path.c_str(), &buffer);
 	if (ret != 0) {
-		cout << "stat succed" << endl;
 		return false;
 	}
 	return (S_ISDIR(buffer.st_mode));
 }
 
 void	Client::_manageGetRequest( void ) {
-	// cout << "The request is :" << _requestLine.filePath << endl;
 	cout << _requestLine.absolutePath << endl;
 	if (_requestIsDir(_requestLine.absolutePath) == true) {
-		cout << "I got a request ending with a /" << endl;
 		string	index = _locationBlockForTheRequest->index_;
 		if (index == "") {
 			if (_locationBlockForTheRequest->autoindex_ == false) {
@@ -80,24 +72,21 @@ void	Client::_manageGetRequest( void ) {
 			return ;
 		} else if (_indexFileExist(_requestLine.absolutePath + _locationBlockForTheRequest->index_) == false
 				&& _locationBlockForTheRequest->autoindex_ == true){
-			cout << "Listing dir" << endl;
 			_listDirectory();
 			return ;
 		} else {
 			_requestLine.absolutePath += _locationBlockForTheRequest->index_;
-			cout << "New Rl :" << _requestLine.absolutePath;
 		}
 	}
 	string extension = _requestLine.absolutePath.substr(_requestLine.absolutePath.find_last_of("."),
 			_requestLine.absolutePath.npos);
 	map<string,string>::const_iterator it = _locationBlockForTheRequest->cgi_.find(extension);
-	cout << "map" << endl;
-	for (map<string, string>::const_iterator it = _locationBlockForTheRequest->cgi_.begin(); it != _locationBlockForTheRequest->cgi_.end(); ++it) {
-		cout << "Cgi Name : " << it->first << " Cgi path : " << it->second << endl; 
+	_statFile(_requestLine.absolutePath.c_str());
+	if (_responseIsReady == true) {
+		return ;
 	}
 	if (extension != "" && extension.find("/") == extension.npos
 			&& it != _locationBlockForTheRequest->cgi_.end()) {
-		cout << RED << "CGI HAS BEEN CALLED" << RESET << endl;
 		_cgiBinPath = it->second;
 		_cgiInit();	
 	} else {
@@ -108,7 +97,6 @@ void	Client::_manageGetRequest( void ) {
 void Client::_statFile(const char* path) {
 	struct stat buffer;
 	memset(&buffer, 0, sizeof(buffer));
-	// cout << path << endl;
 	if(stat(path, &buffer) != 0) {
 		if (errno == EACCES) {
 			_noBodyResponseDriver(403, "", false);
@@ -127,7 +115,6 @@ void Client::_statFile(const char* path) {
 			return ;
 		}
 	}
-	// cout << "Get rid of global pb" << endl;
 	if (_requestLine.method == "GET" || _requestIsHandledByCgi == true) {
 		if (!(S_IRUSR & buffer.st_mode)) {
 			_noBodyResponseDriver(403, "", false);
@@ -148,24 +135,15 @@ void Client::_statFile(const char* path) {
 }
 
 void	Client::_processClassicGetRequest( string& extension ) {
-	cout << "Processing Classic get Request" << endl;
 	_generateContentExtension(extension);	
 	if (_checkExtensionMatch(extension) == false) {
 		string allowedContent = "Content-Type: " + extension;
-			cout << "alloed failed" << endl;
 			_noBodyResponseDriver(406, allowedContent, true);
 		return ;
 	} 
-	_statFile(_requestLine.absolutePath.c_str());
-	if (_responseIsReady == true) {
-		cout << "Stat failed" << endl;
-		return ;
-	}
 	ifstream toSend;
 	toSend.open(_requestLine.absolutePath.c_str());
-	// cout << _requestLine.filePath << boolalpha << toSend.fail() << endl;
 	if (toSend.fail()) {
-		cout << "toSendfailed" << endl;
 		_noBodyResponseDriver(500, "", false);
 	}
 	_bodyStream << toSend.rdbuf();
