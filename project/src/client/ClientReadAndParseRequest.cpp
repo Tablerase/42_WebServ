@@ -109,7 +109,7 @@ void	Client::_parseRequest( void ) {
 
 void	Client::_parseRequestLine( const string& requestLine) {
 	cout << BGRN << "Client of Port " << _owner.getListeningPort() << " belonging to server " <<
-		_configServer->get_name() << " Receive the request : " << requestLine << endl; 
+		_configServer->get_name() << " Receive the request : " << requestLine << RESET << endl; 
 	_requestLine.fullRequest = requestLine;
 	if (requestLine.find_first_of(" ") == requestLine.npos
 			|| requestLine.find_first_of(" ") == requestLine.find_last_of(" ")) {

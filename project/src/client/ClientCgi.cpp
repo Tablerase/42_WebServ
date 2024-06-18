@@ -22,7 +22,7 @@
 #include <unistd.h>
 
 void	Client::_cgiInit( void ) {
-	cout << BYEL << "CGI is called on the request " << _requestLine.fullRequest << "to port "
+	cout << BYEL << "CGI is called on the request " << _requestLine.fullRequest << " to port "
 		<< _owner.getListeningPort() << RESET << endl;
 	_cgiScriptPath = _requestLine.absolutePath.substr(0,
 			_requestLine.absolutePath.find_last_of("/") + 1);
@@ -126,7 +126,7 @@ void	Client::_manageCgiOutfile( void ) {
 }
 
 void	Client::_killCgi( void ) {
-	kill(_cgiScriptPid, 2);
+	kill(_cgiScriptPid, 9);
 	if (waitpid(_cgiScriptPid, NULL, 0) < 0) {
 		_noBodyResponseDriver(500, "", false);
 	}
