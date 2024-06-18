@@ -4,9 +4,6 @@ import cgi, cgitb
 
 form = cgi.FieldStorage()
 
-username = form["username"].value
-emailaddress = form["emailaddress"].value
-
 print("Content-type:text/html")
 
 content = ("<html>")
@@ -16,9 +13,17 @@ content += ("</head>")
 content += ("<body>")
 content += ("<h3> This is HTML's Body Section </h3>")
 content += ("UserName is : ")
-content += (username)
+if "username" in form:
+    username = form["username"].value
+    content += (username)
+else:
+    content += ("Unknown")
 content += ("\nEmail is : ")
-content += (emailaddress)
+if "emailaddress" in form:
+    emailaddress = form["emailaddress"].value
+    content += (emailaddress)
+else:
+    content += ("Unknown")
 content += ("</body>")
 content += ("</html>")
 

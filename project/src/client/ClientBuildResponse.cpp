@@ -12,9 +12,11 @@
 
 #include "Client.hpp"
 #include "Server.hpp"
+#include "color.h"
 #include "utils.hpp"
 #include <cstddef>
 #include <cstdlib>
+#include <sys/socket.h>
 
 void Client::_generateContentExtension(string& path) {
 	path.erase(0, 1);
@@ -120,9 +122,12 @@ void Client::_buildNoBodyResponse(string status, string info, string body, bool 
 	}
 	if (customPageIsPresent == false) {
 		_bodyStream << "<!doctype html><title>" << status << info << "</title><h1>"
-			<< info << "</h1><p>" << body << "</p>";
+			<< status << info << "</h1><p>" << body << "</p>";
 		stringstream size;
 		size << _bodyStream.str().size();
+		if (_responseHeader.find("Content-length: ") != _responseHeader.end()) {
+			_responseHeader.erase("Content-length: ");
+		}
 		_responseHeader.insert(pair<string, string>("Content-length: ", size.str()));
 		if (_responseHeader.find("Content-type: ") != _responseHeader.end()
 				&& _responseHeader.size() != 0) {
@@ -178,6 +183,13 @@ void	Client::_fillResponse( string status, bool shouldClose ) {
 	for (map<string, string>::iterator it = _responseHeader.begin(); it != _responseHeader.end(); ++it) {
 		_response << it->first << it->second << "\r\n";
 	} _response << "\r\n";
+	if (status[0] == '2' || status[0] == '3') {
+		cout << GRN << "Response Headers for the request " << _requestLine.fullRequest << " to port " << _owner.getListeningPort() <<
+			endl << _response.str() << RESET << endl; 
+	} else {
+		cout << RED << "Response Headers for the request " << _requestLine.fullRequest << " to port " << _owner.getListeningPort() <<
+			endl << _response.str() << RESET << endl; 
+	}
 	_response << _bodyStream.rdbuf();
 	_response << "\r\n";
 	_responseIsReady = true;
@@ -187,9 +199,11 @@ void	Client::_fillResponse( string status, bool shouldClose ) {
 }
 
 void	Client::_sendAnswer( void ) {
-	const size_t writeValue = write(_connectionEntry, _response.str().c_str(), _response.str().size());
+	const size_t writeValue = send(_connectionEntry, _response.str().c_str(), _response.str().size(), MSG_DONTWAIT);
 	if (writeValue != _response.str().size()) {
+		cout << BRED "Throwing a close connection Request on port " << _owner.getListeningPort() << RESET << endl;
 		throw CloseMeException();
+		cout << BRED "Throwing a close connection Request on port " << _owner.getListeningPort() << RESET << endl;
 	} else if (_connectionShouldBeClosed == true) {
 		throw CloseMeException();
 	}

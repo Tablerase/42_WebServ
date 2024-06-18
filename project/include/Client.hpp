@@ -39,6 +39,7 @@ typedef struct s_requestLine {
 	string	filePath;
 	string	absolutePath;
 	string	cgiQuery;
+	string	fullRequest;
 }							t_requestLine;
 
 class Client {

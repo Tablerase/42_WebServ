@@ -20,7 +20,7 @@
 #include <string>
 
 #define TIMEOUT 3
-#define MAX_CONNECTIONS 4000
+#define MAX_CONNECTIONS 1000
 
 class Server;
 class Client;

@@ -22,6 +22,8 @@
 #include <unistd.h>
 
 void	Client::_cgiInit( void ) {
+	cout << BYEL << "CGI is called on the request " << _requestLine.fullRequest << "to port "
+		<< _owner.getListeningPort() << RESET << endl;
 	_cgiScriptPath = _requestLine.absolutePath.substr(0,
 			_requestLine.absolutePath.find_last_of("/") + 1);
 	_cgiScriptName = _requestLine.absolutePath.substr
@@ -161,6 +163,7 @@ void	Client::_readOutfile( void ) {
 	if (toSend.fail()) {
 		_noBodyResponseDriver(500, "", false);
 	}
+	cout << BGRN "A CGI request on port " << _owner.getListeningPort() << " was successefully executed" << endl;
 	_bodyStream << toSend.rdbuf();
 	_response << "HTTP/1.1 200 OK\r\n" << _bodyStream.str(); 
 	toSend.close();

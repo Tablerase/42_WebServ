@@ -103,29 +103,34 @@ void	PortListener::_acceptConnection( void ) {
 	int clientFd = accept(this->_socketFd, this->_address->ai_addr,
 			(socklen_t *)&this->_address->ai_addrlen);
 	if (clientFd < 0) {
-		cerr << "Failed connection to port" << _listeningPort << ":" << strerror(errno) << endl;
+		cerr << RED "Failed connection to port" << _listeningPort << ":" << strerror(errno) << RESET << endl;
 	}
 	try {
 		_mainEventLoop->addFdOfInterest(clientFd, this, EPOLLIN);
 	} catch (runtime_error& e) {
-		cerr << "Epoll_ctl_failure : " << e.what() << " closing correspondant connection" << endl;
+		cerr << BRED << "Epoll_ctl_failure : " << e.what() << " closing correspondant connection" RESET << endl;
 		close (clientFd);
 		return ;
 	}
 	if (clientFd > MAX_CONNECTIONS) {
 		_writeMinimalAnswer(clientFd, "503", " Too Busy", "Server is too busy at the moment. try again later.");
+		cerr << BRED << "Port " << getListeningPort() << " Refuse a connection because of connecton limits" << RESET << endl;
     return;
 	}
 	Client* newClient;
 	try {
 		 newClient = new Client(clientFd, *this, *_mainEventLoop);	
 			_clientMap.insert(pair<int, Client *>(clientFd, newClient));
+			cout << BCYN << "Port " << getListeningPort() << " Successefully accept a new conection" << RESET << endl;
 	} catch (bad_alloc& e) {
 		_writeMinimalAnswer(clientFd, "500", " Internal Server Error",
 			"An internal Server error occured. Maybe you should try refresh the page ...");
 	} catch (exception& e) {
 		_writeMinimalAnswer(clientFd, "500", " Internal Server Error",
 			"An internal Server error occured. Maybe you should try refresh the page ...");
+		if (_clientMap.find(clientFd) != _clientMap.end() && _clientMap.size() != 0) {
+			_clientMap.erase(clientFd);
+		}
 		delete newClient;
 	}
 }
@@ -211,6 +216,7 @@ void PortListener::getTimeout(void) {
 		}
 	}
 	for (vector<int>::iterator it = toBeClosed.begin(); it != toBeClosed.end(); ++it) {
+		cout << BYEL << "Port " << getListeningPort() << " will close a timeout connection" << RESET << endl;
 		_closeConnection(*it);
 	}
 	return ;

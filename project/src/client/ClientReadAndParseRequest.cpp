@@ -12,6 +12,7 @@
 
 #include "Client.hpp"
 #include "Server.hpp"
+#include "color.h"
 #include "utils.hpp"
 #include <algorithm>
 #include <ios>
@@ -24,6 +25,7 @@ void	Client::_readRequest( void ) {
 	_status = READING;
 	_singleReadBytes = recv(_connectionEntry, _buffer, BUFFER_SIZE, MSG_DONTWAIT);	
 	if (_singleReadBytes <= 0) {
+		cout << BYEL "Client of port " << _owner.getListeningPort() << " closed the connection" << RESET << endl;
 		throw CloseMeException();
 	}
 	const string request(_buffer, _singleReadBytes);
@@ -106,6 +108,9 @@ void	Client::_parseRequest( void ) {
 }
 
 void	Client::_parseRequestLine( const string& requestLine) {
+	cout << BGRN << "Client of Port " << _owner.getListeningPort() << " belonging to server " <<
+		_configServer->get_name() << " Receive the request : " << requestLine << endl; 
+	_requestLine.fullRequest = requestLine;
 	if (requestLine.find_first_of(" ") == requestLine.npos
 			|| requestLine.find_first_of(" ") == requestLine.find_last_of(" ")) {
 		_noBodyResponseDriver(400, "", true);
@@ -165,6 +170,10 @@ void Client::_parseUri(const string& uri) {
 		_requestLine.filePath = uri;
 	}
 	if (normalizeStr(_requestLine.filePath) < 0) {
+		_noBodyResponseDriver(400, "", true);
+		return ;
+	}
+	if (_requestLine.filePath.find("/../") != _requestLine.filePath.npos) {
 		_noBodyResponseDriver(400, "", true);
 	}
 	_buildAbsolutePath(_requestLine.filePath);

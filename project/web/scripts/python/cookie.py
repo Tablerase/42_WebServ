@@ -1,11 +1,7 @@
 import cgi, os, cgitb, datetime
 
 form = cgi.FieldStorage()
-serverName = os.environ.get('SERVER_NAME')
 
-user = form["username"]
-bgcolor = form["BackGroundColor"]
-print("Content-type:text/html")
 
 body = "<head><title> New User !"
 body += "</title><style>* {font-family: system-ui, -apple-system, BlinkMacSystemFont,"
@@ -20,12 +16,17 @@ body += "Welcome !"
 body += "</h1></body></html>"
 body += "<br><a href=\"/python/welcome.py\"><button> See your profile</button></a>"
 
-print(f"Server: {serverName}")
+if "SERVER_NAME" in os.environ:
+    serverName = os.environ.get('SERVER_NAME')
+    print(f"Server: {serverName}")
 date = datetime.datetime.now().astimezone().strftime("%a, %d %b %G %T %Z")
 print(f"Date : {date}")
-if user:
+print("Content-type:text/html")
+if "username" in form:
+    user = form["username"]
     print(f"Set-Cookie: user={user.value}")
-if bgcolor:
+if "BackGroundColor" in form:
+    bgcolor = form["BackGroundColor"]
     print(f"Set-Cookie: bgcolor={bgcolor.value}")
-print(f"Content-Length: {len(body)}\r\n\r\n")
+print(f"Content-Length: {len(body)}\r\n")
 print(f"{body}")
