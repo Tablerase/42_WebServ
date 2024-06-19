@@ -65,7 +65,7 @@ done
 # echo "}" >> test.conf
 
 # Start the web server in the background
-./WebServ "test.conf" > /dev/null  & # & at the end to run the process in the background
+./webserv "test.conf" > /dev/null  & # & at the end to run the process in the background
 pid=$! # $! is the PID of the last background process
 # Non-blocking check
 for i in {1..5}; do
