@@ -6,6 +6,8 @@ This project is a HTTP server (Mini NGINX) that can handle multiple clients at t
 
 ## Installation
 
+clone the project, move into it with a terminal, then use:
+
 ```bash
 make
 ```
