@@ -1,3 +1,8 @@
+# Documentation
+
+- [Data Structures and Project Architecture - Web Server - Figjam](https://www.figma.com/files/team/1364356230083559376/project/240515569/WebServ?fuid=1364356226035135583)
+  - [Local Saved Figjam](./document/figjam/)
+
 # Config file
 
 Block server :

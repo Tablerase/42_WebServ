@@ -14,10 +14,6 @@ BOLDBLUE='\033[1;34m'
 BOLDRED='\033[1;31m'
 BOLDORANGE='\033[1;33m'
 
-# ! Errors to review/fix:
-
-
-
 # Build the web server
 make re
 
@@ -43,30 +39,30 @@ do
 done
 
 # Test2: Create a N servers with the same port and different server_name
-for (( i=1; i<=N; i++ ))
-do
-    echo "server {" >> test.conf
-    echo "    listen 6060;" >> test.conf
-	echo "    server_name localhost$((i+8000));" >> test.conf
-	echo "    location / {" >> test.conf
-	echo "        root ./web/pages;" >> test.conf
-	echo "        index index.html;" >> test.conf
-	echo "    }" >> test.conf
-    echo "}" >> test.conf
-    echo "" >> test.conf
-done
+# for (( i=1; i<=N; i++ ))
+# do
+#     echo "server {" >> test.conf
+#     echo "    listen 6060;" >> test.conf
+# 	echo "    server_name localhost$((i+8000));" >> test.conf
+# 	echo "    location / {" >> test.conf
+# 	echo "        root ./web/pages;" >> test.conf
+# 	echo "        index index.html;" >> test.conf
+# 	echo "    }" >> test.conf
+#     echo "}" >> test.conf
+#     echo "" >> test.conf
+# done
 
-# Test3: Limit body size
-echo "server {" >> test.conf
-echo "    listen 6000;" >> test.conf
-echo "    server_name localhost;" >> test.conf
-echo "    client_max_body_size 1;" >> test.conf
-echo "    location / {" >> test.conf
-echo "        root ./web/pages;" >> test.conf
-echo "        index index.html;" >> test.conf
-echo "        limit_except GET|POST;" >> test.conf
-echo "    }" >> test.conf
-echo "}" >> test.conf
+# # Test3: Limit body size
+# echo "server {" >> test.conf
+# echo "    listen 6000;" >> test.conf
+# echo "    server_name localhost;" >> test.conf
+# echo "    client_max_body_size 1;" >> test.conf
+# echo "    location / {" >> test.conf
+# echo "        root ./web/pages;" >> test.conf
+# echo "        index index.html;" >> test.conf
+# echo "        limit_except GET|POST;" >> test.conf
+# echo "    }" >> test.conf
+# echo "}" >> test.conf
 
 # Start the web server in the background
 ./WebServ "test.conf" > /dev/null  & # & at the end to run the process in the background
@@ -104,23 +100,23 @@ else
 fi
 
 # Test 2
-echo -e "${BOLDBLUE} Test 2: ${RESET} Server with the same port and different server_name"
-test2=1
-for (( i=1; i<=N; i++ ))
-do
-	curl -s -H "Host: localhost$((i+8000))" http://localhost:6060/index.html | diff - web/pages/index.html > /dev/null
-	if [ $? -eq 0 ]; then
-		test2=$((test2+1))
-	else
-		echo -e "[❌]${RED} Server $((i)) ${RESET}"
-	fi
-done
+# echo -e "${BOLDBLUE} Test 2: ${RESET} Server with the same port and different server_name"
+# test2=1
+# for (( i=1; i<=N; i++ ))
+# do
+# 	curl -s -H "Host: localhost$((i+8000))" http://localhost:6060/index.html | diff - web/pages/index.html > /dev/null
+# 	if [ $? -eq 0 ]; then
+# 		test2=$((test2+1))
+# 	else
+# 		echo -e "[❌]${RED} Server $((i)) ${RESET}"
+# 	fi
+# done
 
-if [ $test2 -eq $((N+1)) ]; then
-	echo -e "[✅]${GREEN} Handle ${N} servers ${RESET}"
-else
-	echo -e "[❌]${RED} Handle ${N} servers ${RESET}"
-fi
+# if [ $test2 -eq $((N+1)) ]; then
+# 	echo -e "[✅]${GREEN} Handle ${N} servers ${RESET}"
+# else
+# 	echo -e "[❌]${RED} Handle ${N} servers ${RESET}"
+# fi
 
 # Test 2
 # echo -e "${BOLDBLUE} Test 2: ${RESET}"

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientReadAndParseRequest.cpp                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: purmerinos <purmerinos@protonmail.com>     +#+  +:+       +#+        */
+/*   By: rcutte <rcutte@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/12 12:52:08 by purmerinos        #+#    #+#             */
-/*   Updated: 2024/06/12 12:53:12 by purmerinos       ###   ########.fr       */
+/*   Updated: 2024/06/19 15:09:04 by rcutte           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,9 @@ void	Client::_parseRequest( void ) {
 		_noBodyResponseDriver(400, "", true);
 		return ;
 	}
-	_configServer = _owner.getServer(host.substr(host.find_first_of(" "), host.find_last_of(":")));	
+  string host_name = host.substr(host.find_first_of(" ") + 1, host.find_last_of(":"));
+  host_name.erase(host_name.find_last_of(":"), host_name.npos);
+	_configServer = _owner.getServer(host_name);	
 	_parseRequestLine(requestLine);
 	if (_responseIsReady == true) {
 		return ;
